@@ -15,15 +15,13 @@ except ImportError:
 env_path = Path(__file__).resolve().parents[2] / ".env"
 load_dotenv(dotenv_path=env_path)
 
-# Get Gemini API key
-api_key = os.getenv("GEMINI_API_KEY")
+def get_gemini_client():
+    api_key = os.getenv("GEMINI_API_KEY")
 
-if not api_key:
-    raise ValueError("GEMINI_API_KEY not found in .env file")
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY not found in .env file")
 
-
-# Initialize Gemini client
-client = genai.Client(api_key=api_key)
+    return genai.Client(api_key=api_key)
 
 
 def extract_claims(text):
@@ -44,6 +42,7 @@ def extract_claims(text):
     {text}
     """
 
+    client = get_gemini_client()
     response = client.models.generate_content(
         model="gemini-3.5-flash-lite",
         contents=prompt,
