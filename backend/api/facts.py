@@ -39,6 +39,7 @@ def update_fact(
         }
 
         fact.value = data.value
+        fact.source_version += 1
 
         if data.name is not None:
             fact.name = data.name
