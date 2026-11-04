@@ -1,0 +1,111 @@
+
+{
+  "contract_version": "1.0.0",
+  "project": "Guardian AI",
+  "description": "Shared API contract for the Living Claim Ledger",
+
+  "enums": {
+    "review_status": [
+      "pending",
+      "processing",
+      "completed",
+      "failed"
+    ],
+    "severity": [
+      "low",
+      "medium",
+      "high",
+      "critical"
+    ],
+    "claim_status": [
+      "pending",
+      "approved",
+      "rejected",
+      "needs_revision",
+      "stale"
+    ],
+    "finding_type": [
+      "unsupported_claim",
+      "outdated_claim",
+      "incorrect_value",
+      "guideline_violation",
+      "missing_citation"
+    ]
+  },
+
+  "entities": {
+    "source": {
+      "id": "string",
+      "filename": "string",
+      "file_type": "string",
+      "version": "integer",
+      "status": "string",
+      "created_at": "datetime"
+    },
+
+    "claim": {
+      "id": "string",
+      "review_id": "string",
+      "claim_text": "string",
+      "linked_fact_ids": ["string"],
+      "status": "claim_status",
+      "source_version": "integer",
+      "created_at": "datetime",
+      "updated_at": "datetime"
+    },
+
+    "finding": {
+      "id": "string",
+      "claim_id": "string",
+      "finding_type": "finding_type",
+      "severity": "severity",
+      "explanation": "string",
+      "evidence": [
+        {
+          "source_id": "string",
+          "passage_id": "string",
+          "quote": "string",
+          "page": "integer"
+        }
+      ],
+      "suggested_edit": "string",
+      "confidence": "number",
+      "verification_status": "string"
+    },
+
+    "review": {
+      "id": "string",
+      "submitted_text": "string",
+      "status": "review_status",
+      "claims": ["claim"],
+      "findings": ["finding"],
+      "created_at": "datetime"
+    },
+
+    "fact": {
+      "id": "string",
+      "name": "string",
+      "value": "string",
+      "source_id": "string",
+      "source_version": "integer",
+      "updated_at": "datetime"
+    },
+
+    "alert": {
+      "id": "string",
+      "claim_id": "string",
+      "fact_id": "string",
+      "message": "string",
+      "status": "string",
+      "created_at": "datetime"
+    }
+  },
+
+  "rules": {
+    "citation_required": true,
+    "human_approval_required": true,
+    "unverified_findings_must_be_flagged": true,
+    "missing_evidence_action": "abstain",
+    "source_version_tracking": true
+  }
+}
