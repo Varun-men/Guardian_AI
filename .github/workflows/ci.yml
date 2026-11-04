@@ -22,8 +22,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest
+          pip install "fastapi[standard]" pytest httpx
 
-      - name: Run tests
+      - name: Run backend tests
         run: |
-          pytest
+          python -m pytest backend/tests -v
