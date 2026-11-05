@@ -1,0 +1,78 @@
+
+[
+  {
+    "id": 1,
+    "text": "Our product guarantees success.",
+    "expected": ["BANNED_TERM"]
+  },
+  {
+    "id": 2,
+    "text": "Orbit is better than NovaTech.",
+    "expected": ["COMPETITOR_MENTION"]
+  },
+  {
+    "id": 3,
+    "text": "Orbit Starter costs $39 per month.",
+    "expected": ["INCORRECT_PRICING"]
+  },
+  {
+    "id": 4,
+    "text": "Orbit Starter costs $29 per month.",
+    "expected": []
+  },
+  {
+    "id": 5,
+    "text": "Enjoy unlimited profits with Orbit.",
+    "expected": ["BANNED_TERM"]
+  },
+  {
+    "id": 6,
+    "text": "CloudPeak is our biggest competitor.",
+    "expected": ["COMPETITOR_MENTION"]
+  },
+  {
+    "id": 7,
+    "text": "Orbit Pro costs $59 per month.",
+    "expected": ["INCORRECT_PRICING"]
+  },
+  {
+    "id": 8,
+    "text": "Orbit Enterprise costs $99 per month.",
+    "expected": []
+  },
+  {
+    "id": 9,
+    "text": "Our service is risk free.",
+    "expected": ["BANNED_TERM"]
+  },
+  {
+    "id": 10,
+    "text": "AlphaSoft offers a similar service.",
+    "expected": ["COMPETITOR_MENTION"]
+  },
+  {
+    "id": 11,
+    "text": "Orbit Starter costs $29 monthly. Guaranteed success.",
+    "expected": ["BANNED_TERM"]
+  },
+  {
+    "id": 12,
+    "text": "Orbit Pro costs $49 monthly.",
+    "expected": []
+  },
+  {
+    "id": 13,
+    "text": "Get 100% guaranteed results with Orbit.",
+    "expected": ["BANNED_TERM"]
+  },
+  {
+    "id": 14,
+    "text": "Orbit Starter costs $49 per month.",
+    "expected": ["INCORRECT_PRICING"]
+  },
+  {
+    "id": 15,
+    "text": "Orbit is our planning application.",
+    "expected": []
+  }
+]

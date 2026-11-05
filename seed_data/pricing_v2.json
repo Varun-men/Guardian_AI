@@ -1,0 +1,22 @@
+
+{
+  "version": "v2",
+  "currency": "USD",
+  "products": [
+    {
+      "name": "Starter",
+      "price": 29,
+      "billing_period": "month"
+    },
+    {
+      "name": "Pro",
+      "price": 49,
+      "billing_period": "month"
+    },
+    {
+      "name": "Enterprise",
+      "price": 99,
+      "billing_period": "month"
+    }
+  ]
+}
