@@ -1,0 +1,60 @@
+/* Guardian AI theme — Neon Blue + Bright Yellow palette */
+:root{
+  --bg:#04090f; --surface:#080f1a; --raised:#0d1826; --line:rgba(0,220,255,.13);
+  --text:#e8f4ff; --text2:#7ab3cc; --muted:#3d6070;
+  --accent:#00c8ff; --accent-text:#00d9ff; --neon:#00c8ff;
+  --yellow:#ffe600; --yellow-soft:rgba(255,230,0,.13);
+  --high:#ff4d6d; --medium:#ff8c00; --ok:#00e5a0; --a11y:#b97aff;
+}
+html,body{background:var(--bg);color:var(--text);font-family:var(--font-sans),system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 0 0 1px rgba(0,200,255,.04)}
+.panel-raised{background:var(--raised);border:1px solid var(--line);border-radius:8px;color:var(--text)}
+.muted{color:var(--muted)} .text2{color:var(--text2)} .neon{color:var(--accent-text)}
+.num{font-variant-numeric:tabular-nums}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 18px;border-radius:9px;font-size:14px;font-weight:600;
+  border:1px solid var(--line);background:var(--raised);color:var(--text);cursor:pointer;transition:background-color .2s,border-color .2s,transform .15s,box-shadow .2s}
+.btn:hover{background:#0d1f30;border-color:rgba(0,200,255,.35);box-shadow:0 0 10px rgba(0,200,255,.12)}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(135deg,#0070a8,#00c8ff);border-color:#00c8ff;color:#fff;box-shadow:0 0 16px rgba(0,200,255,.25)}
+.btn-primary:hover{background:linear-gradient(135deg,#0088c8,#30d8ff);box-shadow:0 0 24px rgba(0,200,255,.4)}
+.btn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:0 9px;line-height:20px;border-radius:5px;font-size:11.5px;font-weight:600;color:var(--tone,var(--text2));border:1px solid color-mix(in srgb,var(--tone,var(--text2)) 30%,transparent);background:color-mix(in srgb,var(--tone,var(--text2)) 10%,transparent)}
+.tone-high{--tone:var(--high)} .tone-medium{--tone:var(--medium)} .tone-supported{--tone:var(--ok)}
+.tone-accessibility{--tone:var(--a11y)} .tone-neon{--tone:var(--accent-text)} .tone-accent{--tone:var(--yellow)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--tone,var(--muted));margin-right:8px}
+.issue.active{border-color:var(--accent);box-shadow:0 0 0 1px rgba(0,200,255,.25),0 0 20px rgba(0,200,255,.08)}
+.no{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:9px;background:linear-gradient(135deg,#0070a8,#00c8ff);color:#fff;font-size:11px;font-weight:700;margin-left:4px;vertical-align:text-top;box-shadow:0 0 8px rgba(0,200,255,.4)}
+mark.claim{background:transparent;color:inherit;text-decoration:underline;text-decoration-color:var(--tone);text-decoration-thickness:2px;text-underline-offset:5px;cursor:pointer;border-radius:2px}
+mark.claim.active{background:color-mix(in srgb,var(--tone) 18%,transparent)}
+.cite{font-family:var(--font-mono),ui-monospace,monospace;font-size:12px;color:var(--muted)}
+.cite-quote{border-left:2px solid var(--line);padding-left:12px;color:var(--text2);font-size:14px}
+.nav-link{display:flex;align-items:center;gap:10px;height:36px;padding:0 12px;border-radius:8px;color:var(--text2);font-size:14px;transition:background-color .15s,color .15s}
+.nav-link:hover{color:var(--text);background:var(--raised)}
+.nav-link[aria-current="page"]{color:var(--accent-text);background:rgba(0,200,255,.08);box-shadow:inset 0 0 0 1px rgba(0,200,255,.2)}
+.nav-link svg{flex:none}
+.diff s{color:var(--muted)} .diff b{font-weight:500;color:var(--text)}
+.faq summary{cursor:pointer;list-style:none;padding:16px 0;font-weight:500;display:flex;justify-content:space-between}
+.faq summary::after{content:"+";color:var(--muted)} .faq details[open] summary::after{content:"\2212"}
+.faq details{border-top:1px solid var(--line)}
+.rule{border-top:1px solid var(--line)}
+.display{font-family:var(--font-display),var(--font-sans),sans-serif;font-weight:300;letter-spacing:-.01em}
+.menu summary{list-style:none;cursor:pointer;display:flex;gap:8px;align-items:center;font-size:15px;color:var(--text)}
+.menu summary::-webkit-details-marker{display:none}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--accent-text);outline-offset:2px}
+
+/* ── Scroll-reveal animation ── */
+@keyframes revealUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes revealFade{from{opacity:0}to{opacity:1}}
+@keyframes waveGrow{from{transform:scaleY(0);opacity:0}to{transform:scaleY(1);opacity:1}}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 10px rgba(0,200,255,.3)}50%{box-shadow:0 0 22px rgba(0,200,255,.6)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+@keyframes countUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes borderGlow{0%,100%{border-color:rgba(0,200,255,.13)}50%{border-color:rgba(0,200,255,.4)}}
+@keyframes scanLine{0%{top:0}100%{top:100%}}
+
+.reveal-up{opacity:0;animation:revealUp .7s cubic-bezier(0.16,1,0.3,1) forwards}
+.reveal-fade{opacity:0;animation:revealFade .9s ease forwards}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
