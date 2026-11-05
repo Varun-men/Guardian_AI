@@ -11,6 +11,9 @@ jobs:
   backend-tests:
     runs-on: ubuntu-latest
 
+    env:
+      JWT_SECRET_KEY: guardian-ai-ci-only-test-secret-2026-not-for-production
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -25,14 +28,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install "fastapi[standard]" pytest httpx sqlalchemy psycopg2-binary "python-jose[cryptography]" "pwdlib[argon2]" python-dotenv
 
-      - name: Run backend tests
-        env:
-          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-        run: |
-          python -m pytest backend/tests -v
-            - name: Verify JWT configuration
-        env:
-          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+      - name: Verify JWT configuration
         run: |
           if [ -z "$JWT_SECRET_KEY" ]; then
             echo "JWT_SECRET_KEY is missing"
@@ -40,3 +36,7 @@ jobs:
           else
             echo "JWT_SECRET_KEY is configured"
           fi
+
+      - name: Run backend tests
+        run: |
+          python -m pytest backend/tests -v
