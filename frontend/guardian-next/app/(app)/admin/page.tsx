@@ -17,8 +17,8 @@ export default function AdminPage() {
   return (
     <div className="flex flex-col gap-6 max-w-5xl">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight text-[#e8f4ff] font-[family-name:var(--font-display)]">Admin facts</h1>
-        <p className="text-[#7ab3cc] text-sm mt-1">
+        <h1 className="text-3xl font-bold tracking-tight text-white font-[family-name:var(--font-display)]">Admin facts</h1>
+        <p className="text-[#a1a1aa] text-sm mt-1">
           Approved values every post is checked against. Changing one flags every linked post.
         </p>
       </header>
@@ -26,12 +26,12 @@ export default function AdminPage() {
       {result && (
         <div
           role="status"
-          className="panel p-4 flex items-center justify-between gap-3 border border-[#00c8ff]/40 bg-[#00c8ff]/10 rounded-xl"
-          style={{ boxShadow: "0 0 20px rgba(0,200,255,0.15)" }}
+          className="panel p-4 flex items-center justify-between gap-3 border border-[#ff6b00]/40 bg-[#ff6b00]/10 rounded-xl"
+          style={{ boxShadow: "0 0 20px rgba(255,107,0,0.18)" }}
         >
           <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#00c8ff] animate-pulse" />
-            <p className="text-sm font-medium text-[#e8f4ff]">{result}</p>
+            <span className="w-2.5 h-2.5 rounded-full bg-[#ff6b00] animate-pulse" />
+            <p className="text-sm font-medium text-white">{result}</p>
           </div>
           <Link
             href="/ledger"
@@ -51,21 +51,21 @@ export default function AdminPage() {
           return (
             <div
               key={f.id}
-              className="panel p-5 flex flex-wrap items-center justify-between gap-4 transition-all duration-200 hover:border-[#00c8ff]/30 hover:shadow-[0_8px_30px_rgba(0,0,0,0.35)]"
+              className="panel p-5 flex flex-wrap items-center justify-between gap-4 transition-all duration-200 hover:border-[#ff6b00]/30 hover:shadow-[0_8px_30px_rgba(0,0,0,0.45)]"
             >
               <div className="flex-1 min-w-[220px]">
                 <div className="flex items-center gap-3">
-                  <h3 className="font-semibold text-base text-[#e8f4ff]">{f.label}</h3>
-                  <span className="text-xs px-2 py-0.5 rounded-full border border-[#00c8ff]/30 bg-[#00c8ff]/10 text-[#00c8ff] font-mono">
+                  <h3 className="font-semibold text-base text-white">{f.label}</h3>
+                  <span className="text-xs px-2 py-0.5 rounded-full border border-[#ff6b00]/30 bg-[#ff6b00]/10 text-[#ff6b00] font-mono">
                     v{f.version}
                   </span>
                 </div>
-                <p className="text-xs text-[#7ab3cc] font-mono mt-1.5 flex items-center gap-2">
+                <p className="text-xs text-[#a1a1aa] font-mono mt-1.5 flex items-center gap-2">
                   <span>{f.id}</span>
-                  <span className="text-[#3d6070]">•</span>
+                  <span className="text-[#71717a]">•</span>
                   <span>source v{f.version}</span>
-                  <span className="text-[#3d6070]">•</span>
-                  <span className={linked > 0 ? "text-[#ffe600]" : "text-[#7ab3cc]"}>
+                  <span className="text-[#71717a]">•</span>
+                  <span className={linked > 0 ? "text-[#ff9500]" : "text-[#a1a1aa]"}>
                     {linked} linked post{linked === 1 ? "" : "s"}
                   </span>
                 </p>
@@ -73,13 +73,13 @@ export default function AdminPage() {
 
               <div className="flex items-center gap-4">
                 <label className="flex items-center gap-2.5 text-sm">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-[#7ab3cc]">Price ($)</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#a1a1aa]">Price ($)</span>
                   <input
                     type="number"
                     min={0}
                     value={val}
                     onChange={(e) => setDrafts({ ...drafts, [f.id]: e.target.value })}
-                    className="panel-raised px-3 py-1.5 w-24 text-center font-mono font-semibold text-[#e8f4ff] focus:outline-none focus:border-[#00c8ff] focus:ring-1 focus:ring-[#00c8ff]"
+                    className="panel-raised px-3 py-1.5 w-24 text-center font-mono font-semibold text-white focus:outline-none focus:border-[#ff6b00] focus:ring-1 focus:ring-[#ff6b00]"
                   />
                 </label>
                 <button
@@ -97,15 +97,15 @@ export default function AdminPage() {
 
       {/* Audit Log */}
       <section className="panel p-6 flex flex-col gap-4" aria-label="Audit log">
-        <div className="flex items-center justify-between border-b border-[#00c8ff]/10 pb-3">
-          <h2 className="font-semibold text-base text-[#e8f4ff] flex items-center gap-2">
+        <div className="flex items-center justify-between border-b border-[#ff6b00]/15 pb-3">
+          <h2 className="font-semibold text-base text-white flex items-center gap-2">
             Audit log
           </h2>
-          <span className="text-xs text-[#7ab3cc] font-mono">{audit.length} entries recorded</span>
+          <span className="text-xs text-[#a1a1aa] font-mono">{audit.length} entries recorded</span>
         </div>
 
         {audit.length === 0 ? (
-          <div className="py-8 text-center text-sm text-[#7ab3cc]/70">
+          <div className="py-8 text-center text-sm text-[#a1a1aa]/70">
             No fact changes recorded yet. Adjust a price above to generate audit events.
           </div>
         ) : (
@@ -113,12 +113,12 @@ export default function AdminPage() {
             {audit.map((a, k) => (
               <li
                 key={k}
-                className="panel-raised p-3.5 text-sm flex flex-wrap items-center gap-3 border border-white/5 hover:border-[#00c8ff]/20 transition-colors"
+                className="panel-raised p-3.5 text-sm flex flex-wrap items-center gap-3 border border-white/5 hover:border-[#ff6b00]/25 transition-colors"
               >
-                <span className="text-xs text-[#7ab3cc] font-mono">{a.at}</span>
+                <span className="text-xs text-[#a1a1aa] font-mono">{a.at}</span>
                 <span className="chip tone-neon text-[11px] font-mono uppercase">{a.actor}</span>
-                <span className="font-semibold text-[#e8f4ff]">{a.action}</span>
-                <span className="text-xs text-[#7ab3cc] flex-1">{a.detail}</span>
+                <span className="font-semibold text-white">{a.action}</span>
+                <span className="text-xs text-[#a1a1aa] flex-1">{a.detail}</span>
               </li>
             ))}
           </ul>

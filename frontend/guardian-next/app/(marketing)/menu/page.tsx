@@ -9,7 +9,7 @@ export default function MenuPage() {
     {
       title: "Core Workspaces",
       tag: "WORKSPACE",
-      color: "#00c8ff",
+      color: "#ff6b00",
       links: [
         {
           href: "/analyze",
@@ -50,7 +50,7 @@ export default function MenuPage() {
           name: "Living Claim Ledger",
           desc: "Audit trail and post inventory. Highlights pricing drift and stale statements instantly.",
           badge: staleCount > 0 ? `${staleCount} Stale` : "In Sync",
-          badgeColor: staleCount > 0 ? "#ff4d6d" : "#00e5a0",
+          badgeColor: staleCount > 0 ? "#ef4444" : "#10b981",
           icon: (
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
@@ -63,7 +63,7 @@ export default function MenuPage() {
     {
       title: "System & Architecture",
       tag: "OVERVIEW",
-      color: "#ffe600",
+      color: "#ff9500",
       links: [
         {
           href: "/#product",
@@ -95,23 +95,23 @@ export default function MenuPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#04090f] text-[#e8f4ff] px-6 py-12 md:py-20 relative overflow-hidden">
+    <div className="min-h-screen bg-[#000000] text-[#ffffff] px-6 py-12 md:py-20 relative overflow-hidden">
       {/* Background radial glow */}
-      <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[#00c8ff]/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-[#ffe600]/8 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[#ff6b00]/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-[#ff9500]/8 rounded-full blur-[140px] pointer-events-none" />
 
       <div className="max-w-5xl mx-auto relative z-10 flex flex-col gap-12">
         {/* Top Header */}
-        <div className="flex items-center justify-between border-b border-[#00c8ff]/15 pb-6">
+        <div className="flex items-center justify-between border-b border-[#ff6b00]/20 pb-6">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0070a8] to-[#00c8ff] flex items-center justify-center font-bold text-lg text-white shadow-[0_0_20px_rgba(0,200,255,0.4)] group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#d44a00] to-[#ff6b00] flex items-center justify-center font-bold text-lg text-white shadow-[0_0_20px_rgba(255,107,0,0.4)] group-hover:scale-105 transition-transform">
               G
             </div>
             <div>
-              <div className="text-sm font-extrabold tracking-wider">
-                GUARDIAN <span className="text-[#00c8ff]">AI</span>
+              <div className="text-sm font-extrabold tracking-wider text-white">
+                GUARDIAN <span className="text-[#ff6b00]">AI</span>
               </div>
-              <div className="text-[10px] text-[#7ab3cc] tracking-widest font-mono">
+              <div className="text-[10px] text-[#a1a1aa] tracking-widest font-mono">
                 NAVIGATION DIRECTORY
               </div>
             </div>
@@ -119,7 +119,7 @@ export default function MenuPage() {
 
           <Link
             href="/"
-            className="btn text-xs font-semibold px-4 py-2 h-auto flex items-center gap-2 border border-[#00c8ff]/30 text-[#00c8ff] hover:bg-[#00c8ff]/10"
+            className="btn text-xs font-semibold px-4 py-2 h-auto flex items-center gap-2 border border-[#ff6b00]/30 text-[#ff6b00] hover:bg-[#ff6b00]/10"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <line x1="19" y1="12" x2="5" y2="12" />
@@ -131,13 +131,13 @@ export default function MenuPage() {
 
         {/* Hero Title */}
         <div>
-          <span className="text-xs uppercase font-mono tracking-widest text-[#ffe600] font-bold">
+          <span className="text-xs uppercase font-mono tracking-widest text-[#ff9500] font-bold">
             Application Index & Shortcuts
           </span>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#e8f4ff] mt-2 font-[family-name:var(--font-display)]">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mt-2 font-[family-name:var(--font-display)]">
             Platform Menu
           </h1>
-          <p className="text-[#7ab3cc] text-base mt-2 max-w-xl">
+          <p className="text-[#a1a1aa] text-base mt-2 max-w-xl">
             Direct access to all verification interfaces, fact management registries, and living claim audit records.
           </p>
         </div>
@@ -147,10 +147,10 @@ export default function MenuPage() {
           {sections.map((sec) => (
             <div key={sec.title} className="flex flex-col gap-4">
               <div className="flex items-center gap-3">
-                <span className="text-xs font-mono font-bold tracking-widest text-[#00c8ff] uppercase px-2.5 py-0.5 rounded bg-[#00c8ff]/10 border border-[#00c8ff]/25">
+                <span className="text-xs font-mono font-bold tracking-widest text-[#ff6b00] uppercase px-2.5 py-0.5 rounded bg-[#ff6b00]/10 border border-[#ff6b00]/25">
                   {sec.tag}
                 </span>
-                <h2 className="text-xl font-bold text-[#e8f4ff]">{sec.title}</h2>
+                <h2 className="text-xl font-bold text-white">{sec.title}</h2>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -158,18 +158,18 @@ export default function MenuPage() {
                   <Link
                     key={link.name}
                     href={link.href}
-                    className="panel p-6 flex flex-col justify-between gap-5 border border-[#00c8ff]/15 hover:border-[#00c8ff] hover:shadow-[0_12px_40px_rgba(0,200,255,0.15)] group transition-all duration-200 rounded-2xl bg-[#080f1a]"
+                    className="panel p-6 flex flex-col justify-between gap-5 border border-[#ff6b00]/15 hover:border-[#ff6b00] hover:shadow-[0_12px_40px_rgba(255,107,0,0.18)] group transition-all duration-200 rounded-2xl bg-[#0c0c0e]"
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-[#0d1826] border border-[#00c8ff]/20 flex items-center justify-center text-[#00c8ff] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(0,200,255,0.4)] transition-all">
+                      <div className="w-12 h-12 rounded-xl bg-[#17171a] border border-[#ff6b00]/20 flex items-center justify-center text-[#ff6b00] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(255,107,0,0.45)] transition-all">
                         {link.icon}
                       </div>
                       <span
                         className="text-xs px-2.5 py-1 rounded-full font-mono font-semibold"
                         style={{
-                          backgroundColor: link.badgeColor ? `${link.badgeColor}15` : "rgba(0,200,255,0.1)",
-                          borderColor: link.badgeColor ? `${link.badgeColor}40` : "rgba(0,200,255,0.25)",
-                          color: link.badgeColor || "#00c8ff",
+                          backgroundColor: link.badgeColor ? `${link.badgeColor}15` : "rgba(255,107,0,0.12)",
+                          borderColor: link.badgeColor ? `${link.badgeColor}40` : "rgba(255,107,0,0.3)",
+                          color: link.badgeColor || "#ff6b00",
                           borderWidth: 1,
                         }}
                       >
@@ -178,13 +178,13 @@ export default function MenuPage() {
                     </div>
 
                     <div>
-                      <h3 className="text-lg font-bold text-[#e8f4ff] group-hover:text-[#00c8ff] transition-colors flex items-center gap-2">
+                      <h3 className="text-lg font-bold text-white group-hover:text-[#ff6b00] transition-colors flex items-center gap-2">
                         {link.name}
-                        <span className="text-xs text-[#00c8ff] opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-xs text-[#ff6b00] opacity-0 group-hover:opacity-100 transition-opacity">
                           →
                         </span>
                       </h3>
-                      <p className="text-sm text-[#7ab3cc] mt-1.5 leading-relaxed">
+                      <p className="text-sm text-[#a1a1aa] mt-1.5 leading-relaxed">
                         {link.desc}
                       </p>
                     </div>
@@ -196,17 +196,17 @@ export default function MenuPage() {
         </div>
 
         {/* Quick Launch CTA Banner */}
-        <div className="p-8 rounded-2xl bg-gradient-to-r from-[#0070a8]/20 via-[#080f1a] to-[#ffe600]/10 border border-[#00c8ff]/30 flex flex-wrap items-center justify-between gap-6 shadow-[0_0_50px_rgba(0,200,255,0.1)]">
+        <div className="p-8 rounded-2xl bg-gradient-to-r from-[#d44a00]/20 via-[#0c0c0e] to-[#ff9500]/10 border border-[#ff6b00]/30 flex flex-wrap items-center justify-between gap-6 shadow-[0_0_50px_rgba(255,107,0,0.12)]">
           <div>
-            <h3 className="text-xl font-bold text-[#e8f4ff]">Ready to verify marketing copy?</h3>
-            <p className="text-sm text-[#7ab3cc] mt-1">
+            <h3 className="text-xl font-bold text-white">Ready to verify marketing copy?</h3>
+            <p className="text-sm text-[#a1a1aa] mt-1">
               Start with sample draft copy to experience deterministic rule checks and evidence verifications.
             </p>
           </div>
           <div className="flex items-center gap-3">
             <Link
               href="/analyze"
-              className="btn btn-primary px-6 py-2.5 h-auto text-sm font-bold shadow-[0_0_20px_rgba(0,200,255,0.4)]"
+              className="btn btn-primary px-6 py-2.5 h-auto text-sm font-bold shadow-[0_0_20px_rgba(255,107,0,0.4)]"
             >
               Open Analyze Studio →
             </Link>

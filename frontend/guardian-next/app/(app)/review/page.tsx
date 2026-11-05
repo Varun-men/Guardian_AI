@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -13,9 +12,9 @@ export default function ReviewPage() {
 
   if (!analysis) {
     return (
-      <div className="panel p-8 max-w-xl flex flex-col gap-4 border border-[#00c8ff]/20">
+      <div className="panel p-8 max-w-xl flex flex-col gap-4 border border-[#ff6b00]/25">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#00c8ff]/10 border border-[#00c8ff]/30 flex items-center justify-center text-[#00c8ff]">
+          <div className="w-10 h-10 rounded-xl bg-[#ff6b00]/10 border border-[#ff6b00]/30 flex items-center justify-center text-[#ff6b00]">
             <svg
               width="20"
               height="20"
@@ -29,10 +28,10 @@ export default function ReviewPage() {
           </div>
 
           <div>
-            <h1 className="text-xl font-bold text-[#e8f4ff]">
+            <h1 className="text-xl font-bold text-white">
               Nothing to review yet
             </h1>
-            <p className="text-[#7ab3cc] text-sm">
+            <p className="text-[#a1a1aa] text-sm">
               Analyze draft copy to inspect findings and check citations.
             </p>
           </div>
@@ -47,8 +46,8 @@ export default function ReviewPage() {
             onClick={() => setAnalysis(mockAnalyze)}
             className="btn"
             style={{
-              color: "#ffe600",
-              borderColor: "rgba(255,230,0,0.3)",
+              color: "#ff9500",
+              borderColor: "rgba(255,149,0,0.35)",
             }}
           >
             Load sample demo draft
@@ -201,20 +200,20 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
     <div className="flex flex-col gap-6 max-w-7xl">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-[#e8f4ff] font-[family-name:var(--font-display)]">
+          <h1 className="text-3xl font-bold tracking-tight text-white font-[family-name:var(--font-display)]">
             Review draft
           </h1>
 
-          <p className="text-sm text-[#7ab3cc] mt-1 flex items-center gap-2">
+          <p className="text-sm text-[#a1a1aa] mt-1 flex items-center gap-2">
             <span>{issues.length} findings</span>
 
-            <span className="text-[#3d6070]">•</span>
+            <span className="text-[#71717a]">•</span>
 
             <span
               className={
                 pending > 0
-                  ? "text-[#ffe600] font-semibold"
-                  : "text-[#00e5a0]"
+                  ? "text-[#ff9500] font-semibold"
+                  : "text-[#10b981]"
               }
             >
               {pending} need your decision
@@ -228,9 +227,9 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
             className="btn btn-primary"
             style={{
               background:
-                "linear-gradient(135deg, #00c8ff 0%, #00e5a0 100%)",
-              color: "#04090f",
-              boxShadow: "0 0 20px rgba(0,229,160,0.35)",
+                "linear-gradient(135deg, #d44a00 0%, #ff6b00 100%)",
+              color: "#ffffff",
+              boxShadow: "0 0 20px rgba(255,107,0,0.45)",
             }}
           >
             Approved ✓ Open Living Ledger
@@ -249,20 +248,20 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
         {/* Left Column: Draft Review */}
         <section
-          className="panel p-6 flex flex-col gap-5 h-fit border border-[#00c8ff]/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
+          className="panel p-6 flex flex-col gap-5 h-fit border border-[#ff6b00]/18 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
           aria-label="Draft"
         >
-          <div className="flex items-center justify-between border-b border-[#00c8ff]/10 pb-3">
-            <h2 className="text-xs uppercase tracking-wider font-mono font-bold text-[#7ab3cc]">
+          <div className="flex items-center justify-between border-b border-[#ff6b00]/15 pb-3">
+            <h2 className="text-xs uppercase tracking-wider font-mono font-bold text-[#a1a1aa]">
               Draft Preview
             </h2>
 
-            <span className="text-xs text-[#3d6070] font-mono">
+            <span className="text-xs text-[#71717a] font-mono">
               Interactive Proof Sheet
             </span>
           </div>
 
-          <div className="text-base text-[#e8f4ff] leading-relaxed p-4 rounded-xl bg-black/20 border border-white/5">
+          <div className="text-base text-white leading-relaxed p-4 rounded-xl bg-black/40 border border-white/5">
             {segments.map((segment, index) =>
               segment.issue ? (
                 <span key={index} className="inline">
@@ -271,7 +270,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
                     role="button"
                     className={`claim tone-${segment.issue.severity.toLowerCase()} ${
                       active === segment.issue.id
-                        ? "active ring-2 ring-[#00c8ff]/60 px-1 py-0.5 rounded"
+                        ? "active ring-2 ring-[#ff6b00]/70 px-1 py-0.5 rounded"
                         : ""
                     }`}
                     onClick={() =>
@@ -316,20 +315,20 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
                 onClick={() => setActive(issue.id)}
                 className={`p-3 rounded-lg border text-sm flex items-center justify-between cursor-pointer transition-colors ${
                   active === issue.id
-                    ? "border-[#00c8ff] bg-[#00c8ff]/10"
-                    : "border-white/5 bg-black/20 hover:border-[#00c8ff]/30"
+                    ? "border-[#ff6b00] bg-[#ff6b00]/10"
+                    : "border-white/5 bg-black/30 hover:border-[#ff6b00]/30"
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs text-[#7ab3cc]">
+                  <span className="font-mono text-xs text-[#a1a1aa]">
                     {issue.flagged_text}
                   </span>
 
-                  <span className="text-xs text-[#3d6070]">
+                  <span className="text-xs text-[#71717a]">
                     •
                   </span>
 
-                  <span className="text-xs text-[#ffe600]">
+                  <span className="text-xs text-[#ff9500]">
                     {issue.category
                       .toLowerCase()
                       .replace(/_/g, " ")}
@@ -351,7 +350,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
           {actionError && (
             <p
               role="status"
-              className="rounded-lg border border-[#ffe600]/30 bg-[#ffe600]/10 p-3 text-sm text-[#ffe600]"
+              className="rounded-lg border border-[#ff9500]/30 bg-[#ff9500]/10 p-3 text-sm text-[#ff9500]"
             >
               {actionError}
             </p>

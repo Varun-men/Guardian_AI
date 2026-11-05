@@ -4,17 +4,17 @@ import { useEffect, useRef, useState } from "react";
 
 /* ─── Colour tokens ─── */
 const C = {
-  neon: "#00c8ff",
-  yellow: "#ffe600",
-  text: "#e8f4ff",
-  text2: "#7ab3cc",
-  muted: "#3d6070",
-  bg: "#04090f",
-  surface: "#080f1a",
-  raised: "#0d1826",
-  line: "rgba(0,220,255,.14)",
-  high: "#ff4d6d",
-  ok: "#00e5a0",
+  neon: "#ff6b00",
+  yellow: "#ff9500",
+  text: "#ffffff",
+  text2: "#a1a1aa",
+  muted: "#71717a",
+  bg: "#000000",
+  surface: "#0c0c0e",
+  raised: "#17171a",
+  line: "rgba(255,107,0,.18)",
+  high: "#ef4444",
+  ok: "#10b981",
 };
 
 /* ─── Scroll-reveal hook for elements popping up from bottom ─── */
@@ -121,15 +121,15 @@ function Logo({ size = "md" }: { size?: "sm" | "md" }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: `linear-gradient(135deg, #0070a8, ${C.neon})`,
-          boxShadow: `0 0 20px rgba(0,200,255,.45)`,
+          background: `linear-gradient(135deg, #d44a00, ${C.neon})`,
+          boxShadow: `0 0 20px rgba(255,107,0,.45)`,
           fontWeight: 900,
           fontSize: s * 0.45,
           color: "#fff",
           fontFamily: "var(--font-display)",
           transition: "transform 0.2s ease, box-shadow 0.2s ease",
         }}
-        className="group-hover:scale-105 group-hover:shadow-[0_0_25px_rgba(0,200,255,0.6)]"
+        className="group-hover:scale-105 group-hover:shadow-[0_0_25px_rgba(255,107,0,0.6)]"
       >
         G
       </span>
@@ -202,7 +202,7 @@ function Wave() {
           left: 0,
           right: 0,
           height: 40,
-          background: "linear-gradient(to top, #04090f, transparent)",
+          background: "linear-gradient(to top, #000000, transparent)",
         }}
       />
     </div>
@@ -224,13 +224,13 @@ function NavMenu() {
           padding: "9px 18px",
           borderRadius: 10,
           cursor: "pointer",
-          background: open ? `rgba(0,200,255,.15)` : `rgba(0,200,255,.05)`,
-          border: `1px solid ${open ? C.neon : "rgba(0,200,255,0.2)"}`,
+          background: open ? `rgba(255,107,0,.15)` : `rgba(255,107,0,.05)`,
+          border: `1px solid ${open ? C.neon : "rgba(255,107,0,0.2)"}`,
           color: open ? C.neon : C.text,
           fontSize: 14,
           fontWeight: 700,
           transition: "all .2s ease",
-          boxShadow: open ? "0 0 16px rgba(0,200,255,0.25)" : "none",
+          boxShadow: open ? "0 0 16px rgba(255,107,0,0.25)" : "none",
         }}
         aria-expanded={open}
       >
@@ -249,12 +249,12 @@ function NavMenu() {
             right: 0,
             top: "calc(100% + 12px)",
             zIndex: 60,
-            background: "#080f1a",
+            background: "#0c0c0e",
             border: `1px solid ${C.line}`,
             borderRadius: 16,
             padding: 10,
             minWidth: 260,
-            boxShadow: `0 24px 60px rgba(0,0,0,.8), 0 0 0 1px rgba(0,200,255,.15)`,
+            boxShadow: `0 24px 60px rgba(0,0,0,.8), 0 0 0 1px rgba(255,107,0,.15)`,
             animation: "revealUp .22s cubic-bezier(0.16,1,0.3,1)",
           }}
         >
@@ -285,16 +285,16 @@ function NavMenu() {
                   fontSize: 13.5,
                   fontWeight: 600,
                   color: item.highlight ? C.yellow : C.text,
-                  background: item.highlight ? `rgba(255,230,0,.08)` : "transparent",
+                  background: item.highlight ? `rgba(255,149,0,.08)` : "transparent",
                   textDecoration: "none",
                   transition: "background .15s, color .15s",
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = item.highlight ? `rgba(255,230,0,.15)` : `rgba(0,200,255,.08)`;
+                  (e.currentTarget as HTMLElement).style.background = item.highlight ? `rgba(255,149,0,.15)` : `rgba(255,107,0,.08)`;
                   (e.currentTarget as HTMLElement).style.color = item.highlight ? C.yellow : C.neon;
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = item.highlight ? `rgba(255,230,0,.08)` : "transparent";
+                  (e.currentTarget as HTMLElement).style.background = item.highlight ? `rgba(255,149,0,.08)` : "transparent";
                   (e.currentTarget as HTMLElement).style.color = item.highlight ? C.yellow : C.text;
                 }}
               >
@@ -378,7 +378,7 @@ function PreviewCard() {
         display: "flex",
         flexDirection: "column",
         gap: 20,
-        boxShadow: `0 0 70px rgba(0,200,255,.1), 0 28px 70px rgba(0,0,0,.6)`,
+        boxShadow: `0 0 70px rgba(255,107,0,.1), 0 28px 70px rgba(0,0,0,.6)`,
       }}
     >
       {/* Top bar */}
@@ -416,13 +416,13 @@ function PreviewCard() {
             width: 20,
             height: 20,
             borderRadius: 10,
-            background: `linear-gradient(135deg,#0070a8,${C.neon})`,
+            background: `linear-gradient(135deg,#d44a00,${C.neon})`,
             color: "#fff",
             fontSize: 10.5,
             fontWeight: 800,
             marginLeft: 5,
             verticalAlign: "text-top",
-            boxShadow: `0 0 10px rgba(0,200,255,.5)`,
+            boxShadow: `0 0 10px rgba(255,107,0,.5)`,
           }}
         >
           1
@@ -449,13 +449,13 @@ function PreviewCard() {
             width: 20,
             height: 20,
             borderRadius: 10,
-            background: `linear-gradient(135deg,#0070a8,${C.neon})`,
+            background: `linear-gradient(135deg,#d44a00,${C.neon})`,
             color: "#fff",
             fontSize: 10.5,
             fontWeight: 800,
             marginLeft: 5,
             verticalAlign: "text-top",
-            boxShadow: `0 0 10px rgba(0,200,255,.5)`,
+            boxShadow: `0 0 10px rgba(255,107,0,.5)`,
           }}
         >
           2
@@ -473,13 +473,13 @@ function PreviewCard() {
               width: 20,
               height: 20,
               borderRadius: 10,
-              background: `linear-gradient(135deg,#0070a8,${C.neon})`,
+              background: `linear-gradient(135deg,#d44a00,${C.neon})`,
               color: "#fff",
               fontSize: 10.5,
               fontWeight: 800,
               flexShrink: 0,
               marginTop: 1,
-              boxShadow: `0 0 8px rgba(0,200,255,.4)`,
+              boxShadow: `0 0 8px rgba(255,107,0,.4)`,
             }}
           >
             1
@@ -500,13 +500,13 @@ function PreviewCard() {
               width: 20,
               height: 20,
               borderRadius: 10,
-              background: `linear-gradient(135deg,#0070a8,${C.neon})`,
+              background: `linear-gradient(135deg,#d44a00,${C.neon})`,
               color: "#fff",
               fontSize: 10.5,
               fontWeight: 800,
               flexShrink: 0,
               marginTop: 1,
-              boxShadow: `0 0 8px rgba(0,200,255,.4)`,
+              boxShadow: `0 0 8px rgba(255,107,0,.4)`,
             }}
           >
             2
@@ -577,7 +577,7 @@ export default function Landing() {
         }
         .landing-nav-link:hover {
           color: ${C.neon};
-          background: rgba(0,200,255,.08);
+          background: rgba(255,107,0,.08);
         }
 
         .offer-card {
@@ -593,7 +593,7 @@ export default function Landing() {
         .offer-card:hover {
           border-color: ${C.neon};
           transform: translateY(-6px);
-          box-shadow: 0 20px 50px rgba(0,200,255,.14), 0 0 0 1px rgba(0,200,255,.2);
+          box-shadow: 0 20px 50px rgba(255,107,0,.14), 0 0 0 1px rgba(255,107,0,.2);
         }
 
         .faq-item {
@@ -643,24 +643,24 @@ export default function Landing() {
           transition: all .25s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .hero-btn-primary {
-          background: linear-gradient(135deg, #0070a8, ${C.neon});
+          background: linear-gradient(135deg, #d44a00, ${C.neon});
           color: #fff;
           border: none;
-          box-shadow: 0 0 24px rgba(0,200,255,.4);
+          box-shadow: 0 0 24px rgba(255,107,0,.4);
         }
         .hero-btn-primary:hover {
-          box-shadow: 0 0 40px rgba(0,200,255,.65);
+          box-shadow: 0 0 40px rgba(255,107,0,.65);
           transform: translateY(-3px) scale(1.02);
         }
         .hero-btn-secondary {
-          background: rgba(255,230,0,.08);
+          background: rgba(255,149,0,.08);
           color: ${C.yellow};
-          border: 1px solid rgba(255,230,0,.35);
+          border: 1px solid rgba(255,149,0,.35);
         }
         .hero-btn-secondary:hover {
-          background: rgba(255,230,0,.15);
+          background: rgba(255,149,0,.15);
           border-color: ${C.yellow};
-          box-shadow: 0 0 24px rgba(255,230,0,.25);
+          box-shadow: 0 0 24px rgba(255,149,0,.25);
           transform: translateY(-3px) scale(1.02);
         }
       `}</style>
@@ -675,7 +675,7 @@ export default function Landing() {
             width: 750,
             height: 750,
             borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(0,200,255,.14) 0%, transparent 65%)",
+            background: "radial-gradient(circle, rgba(255,107,0,.14) 0%, transparent 65%)",
             animation: "orbDrift 20s ease-in-out infinite",
           }}
         />
@@ -687,7 +687,7 @@ export default function Landing() {
             width: 600,
             height: 600,
             borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(255,230,0,.08) 0%, transparent 65%)",
+            background: "radial-gradient(circle, rgba(255,149,0,.08) 0%, transparent 65%)",
             animation: "orbDrift 26s ease-in-out 3s infinite reverse",
           }}
         />
@@ -712,7 +712,7 @@ export default function Landing() {
         >
           <Logo />
           <nav style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <Link href="/menu" className="landing-nav-link font-bold text-[#ffe600]">
+            <Link href="/menu" className="landing-nav-link font-bold text-[#ff9500]">
               Menu Directory
             </Link>
             <a href="#product" className="landing-nav-link">
@@ -758,10 +758,10 @@ export default function Landing() {
                   fontSize: 12.5,
                   fontWeight: 800,
                   letterSpacing: ".08em",
-                  border: `1px solid rgba(0,200,255,.35)`,
+                  border: `1px solid rgba(255,107,0,.35)`,
                   color: C.neon,
-                  background: "rgba(0,200,255,.08)",
-                  boxShadow: "0 0 20px rgba(0,200,255,0.15)",
+                  background: "rgba(255,107,0,.08)",
+                  boxShadow: "0 0 20px rgba(255,107,0,0.15)",
                 }}
               >
                 <span
@@ -869,8 +869,8 @@ export default function Landing() {
                     gap: 7,
                     padding: "6px 14px",
                     borderRadius: 999,
-                    background: "rgba(0,200,255,.09)",
-                    border: `1px solid rgba(0,200,255,.3)`,
+                    background: "rgba(255,107,0,.09)",
+                    border: `1px solid rgba(255,107,0,.3)`,
                     fontSize: 11.5,
                     fontWeight: 800,
                     color: C.neon,
@@ -914,8 +914,8 @@ export default function Landing() {
                   gap: 7,
                   padding: "6px 14px",
                   borderRadius: 999,
-                  background: "rgba(255,230,0,.08)",
-                  border: `1px solid rgba(255,230,0,.3)`,
+                  background: "rgba(255,149,0,.08)",
+                  border: `1px solid rgba(255,149,0,.3)`,
                   fontSize: 11.5,
                   fontWeight: 800,
                   color: C.yellow,
@@ -976,7 +976,7 @@ export default function Landing() {
                 gap: 40,
                 gridTemplateColumns: "1fr 1fr",
                 alignItems: "center",
-                boxShadow: `0 0 90px rgba(0,200,255,.07)`,
+                boxShadow: `0 0 90px rgba(255,107,0,.07)`,
               }}
             >
               <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
@@ -1024,8 +1024,8 @@ export default function Landing() {
                       gap: 18,
                       padding: "12px 18px",
                       borderRadius: 12,
-                      background: "rgba(0,200,255,0.02)",
-                      border: "1px solid rgba(0,200,255,0.06)",
+                      background: "rgba(255,107,0,0.02)",
+                      border: "1px solid rgba(255,107,0,0.06)",
                     }}
                   >
                     <span style={{ fontSize: 12, fontWeight: 900, color: s.color, fontFamily: "ui-monospace,monospace", flexShrink: 0 }}>

@@ -78,47 +78,59 @@ def check_competitors(text, rules):
     return issues
 
 
+
 def check_pricing(text, pricing_data):
     issues = []
 
     for product in pricing_data.get("products", []):
         name = product["name"]
         approved_price = product["price"]
+        approved_price_text = format(float(approved_price), "g")
 
         # Find sentences containing this product name.
         sentences = re.split(r"(?<=[.!?])\s+", text)
 
         for sentence in sentences:
+            clean_sentence = sentence.strip()
+
             if not re.search(
                 rf"\b{re.escape(name)}\b",
-                sentence,
+                clean_sentence,
                 re.IGNORECASE
             ):
                 continue
 
-            # Match currency amounts such as $29 or USD 29.
-            prices = re.findall(
-                r"(?:\$|USD\s*)\s*(\d+(?:\.\d{1,2})?)",
-                sentence,
+            # Find currency amounts while preserving their format.
+            price_matches = re.finditer(
+                r"(?P<currency>\$|USD\s*)\s*"
+                r"(?P<amount>\d+(?:\.\d{1,2})?)",
+                clean_sentence,
                 re.IGNORECASE
             )
 
-            for price in prices:
-                mentioned_price = float(price)
+            for price_match in price_matches:
+                mentioned_price = float(price_match.group("amount"))
 
                 if mentioned_price != float(approved_price):
+                    # Preserve the original currency symbol or USD prefix.
+                    currency = price_match.group("currency")
+
+                    corrected_sentence = (
+                        clean_sentence[:price_match.start()]
+                        + currency
+                        + approved_price_text
+                        + clean_sentence[price_match.end():]
+                    )
+
                     issues.append(create_issue(
                         category="INCORRECT_PRICING",
                         severity="HIGH",
-                        flagged_text=sentence.strip(),
+                        flagged_text=clean_sentence,
                         explanation=(
                             f"{name} price is incorrect. "
                             f"Approved price is ${approved_price}."
                         ),
-                        suggested_fix=(
-                            f"Replace the incorrect price with "
-                            f"${approved_price}."
-                        ),
+                        suggested_fix=corrected_sentence,
                         passage_id="PRICING_V2",
                         evidence=(
                             f"{name}: ${approved_price}/"
@@ -128,6 +140,7 @@ def check_pricing(text, pricing_data):
                     ))
 
     return issues
+
 
 
 def check_required_disclaimers(text, rules):

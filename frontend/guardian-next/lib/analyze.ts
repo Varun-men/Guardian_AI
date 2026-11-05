@@ -4,9 +4,14 @@ import type { AnalyzeResponse } from "./types";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
+export type ImageMetadata = {
+  filename: string;
+  alt?: string | null;
+};
+
 export async function analyzeDraft(
   content: string,
-  hasImage: boolean
+  images: ImageMetadata[]
 ): Promise<AnalyzeResponse> {
   const response = await fetch(
     `${API_BASE}/api/review/analyze`,
@@ -17,7 +22,8 @@ export async function analyzeDraft(
       },
       body: JSON.stringify({
         content,
-        has_image: hasImage,
+        has_image: images.length > 0,
+        images,
       }),
     }
   );

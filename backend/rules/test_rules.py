@@ -41,6 +41,23 @@ def test_wrong_price():
 
     print("PASS: Incorrect pricing detection")
 
+def test_pricing_suggested_fix_replaces_entire_sentence():
+    result = analyze_draft(
+        "Orbit Starter costs $39 per month."
+    )
+
+    issue = next(
+        issue for issue in result["issues"]
+        if issue["category"] == "INCORRECT_PRICING"
+    )
+
+    assert issue["flagged_text"] == (
+        "Orbit Starter costs $39 per month."
+    )
+
+    assert issue["suggested_fix"] == (
+        "Orbit Starter costs $29 per month."
+    )
 
 def test_correct_price():
     result = analyze_draft(

@@ -1,24 +1,23 @@
-
 import type { Issue } from "@/lib/types";
 
 const C = {
-  neon: "#00c8ff",
-  yellow: "#ffe600",
-  text: "#e8f4ff",
-  text2: "#7ab3cc",
-  muted: "#3d6070",
-  surface: "#080f1a",
-  raised: "#0d1826",
-  line: "rgba(0,220,255,.13)",
-  ok: "#00e5a0",
-  high: "#ff4d6d",
-  medium: "#ff8c00",
+  neon: "#ff6b00",
+  yellow: "#ff9500",
+  text: "#ffffff",
+  text2: "#a1a1aa",
+  muted: "#71717a",
+  surface: "#0c0c0e",
+  raised: "#17171a",
+  line: "rgba(255,107,0,.18)",
+  ok: "#10b981",
+  high: "#ef4444",
+  medium: "#ff6b00",
   a11y: "#b97aff",
 };
 
 const BG = {
-  card: "rgba(0,180,255,.018)",
-  raised: "rgba(0,180,255,.045)",
+  card: "rgba(255,107,0,.025)",
+  raised: "rgba(255,107,0,.06)",
 };
 
 const LABEL: Record<Issue["severity"], string> = {
@@ -125,7 +124,9 @@ export default function IssueCard({
 }) {
   const toneColor = TONE_COLOR[issue.severity];
 
-  const pct = Math.round(issue.confidence * 100);
+  const pct = Number.isFinite(issue.confidence)
+  ? Math.round(Math.max(0, Math.min(1, issue.confidence)) * 100)
+  : 0;
 
   const pctColor =
     pct > 90 ? C.ok : pct > 70 ? C.neon : C.medium;
@@ -146,7 +147,7 @@ export default function IssueCard({
           position:absolute;
           inset:0;
           border-radius:16px;
-          background:linear-gradient(135deg, rgba(0,200,255,.04) 0%, transparent 60%);
+          background:linear-gradient(135deg, rgba(255,107,0,.06) 0%, transparent 60%);
           opacity:0;
           transition:opacity .25s;
           pointer-events:none;
@@ -155,7 +156,7 @@ export default function IssueCard({
 
         .ic-wrap:hover {
           transform:translateY(-3px);
-          box-shadow:0 16px 48px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.08);
+          box-shadow:0 16px 48px rgba(0,0,0,.65), 0 0 0 1px rgba(255,107,0,.25);
         }
 
         .ic-wrap:hover::before {
@@ -163,11 +164,11 @@ export default function IssueCard({
         }
 
         .ic-wrap:hover .ic-inner {
-          background:rgba(0,180,255,.032);
+          background:rgba(255,107,0,.045);
         }
 
         .ic-wrap.ic-active {
-          box-shadow:0 0 0 1.5px ${C.neon}, 0 8px 32px rgba(0,200,255,.14);
+          box-shadow:0 0 0 1.5px ${C.neon}, 0 8px 32px rgba(255,107,0,.2);
         }
 
         .ic-sev-bar {
@@ -190,15 +191,15 @@ export default function IssueCard({
           border:none;
           color:#fff;
           cursor:pointer;
-          background:linear-gradient(135deg,#0070a8,${C.neon});
-          box-shadow:0 0 16px rgba(0,200,255,.35);
+          background:linear-gradient(135deg,#d44a00,${C.neon});
+          box-shadow:0 0 16px rgba(255,107,0,.4);
           transition:all .2s ease;
         }
 
         .ic-apply-btn:hover {
           filter:brightness(1.12);
           transform:translateY(-1px);
-          box-shadow:0 0 24px rgba(0,200,255,.55);
+          box-shadow:0 0 24px rgba(255,107,0,.6);
         }
 
         .ic-dismiss-btn {
@@ -211,22 +212,22 @@ export default function IssueCard({
           font-weight:600;
           cursor:pointer;
           color:${C.text2};
-          background:rgba(255,255,255,.045);
-          border:1px solid rgba(255,255,255,.1);
+          background:rgba(255,255,255,.05);
+          border:1px solid rgba(255,255,255,.12);
           transition:all .2s ease;
         }
 
         .ic-dismiss-btn:hover {
-          background:rgba(255,255,255,.08);
+          background:rgba(255,255,255,.1);
           color:${C.text};
-          border-color:rgba(255,255,255,.2);
+          border-color:rgba(255,255,255,.25);
         }
 
         .ic-confidence-track {
           width:52px;
           height:5px;
           border-radius:999px;
-          background:rgba(255,255,255,.08);
+          background:rgba(255,255,255,.1);
           overflow:hidden;
         }
 
@@ -239,7 +240,7 @@ export default function IssueCard({
         .ic-evidence {
           border-left:2px solid ${C.neon};
           padding:10px 14px;
-          background:rgba(0,200,255,.04);
+          background:rgba(255,107,0,.06);
           border-radius:0 8px 8px 0;
         }
 
@@ -249,7 +250,7 @@ export default function IssueCard({
           align-items:flex-start;
           padding:11px 14px;
           border-radius:10px;
-          background:rgba(255,230,0,.06);
+          background:rgba(255,149,0,.08);
           border-left:2px solid ${C.yellow};
         }
       `}</style>

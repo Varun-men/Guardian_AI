@@ -10,6 +10,7 @@ from sqlalchemy import inspect, text
 from backend.api.facts import router as facts_router
 from backend.auth.routes import router as auth_router
 from backend.db.database import engine
+from backend.rules.integration import run_rule_checks
 
 
 # ============================================================
@@ -58,9 +59,15 @@ app.add_middleware(
 # Request schema
 # ============================================================
 
+class ImageMetadata(BaseModel):
+    filename: str = Field(min_length=1, max_length=255)
+    alt: Optional[str] = None
+
+
 class AnalyzeRequest(BaseModel):
     content: str = Field(min_length=1, max_length=50000)
     has_image: bool = False
+    images: List[ImageMetadata] = Field(default_factory=list)
 
 
 # ============================================================
@@ -156,7 +163,28 @@ def analyze_draft(request: AnalyzeRequest):
                 "Claim extraction returned no result."
             )
 
-        issues = []
+        # ----------------------------------------------------
+        # STEP 1.5: Run deterministic brand and pricing checks
+        # ----------------------------------------------------
+
+        rule_result = run_rule_checks(
+        content=request.content,
+        images=[
+            image.model_dump()
+            for image in request.images
+        ]
+    )
+
+        issues = [
+            Issue(**issue)
+            for issue in rule_result["issues"]
+        ]
+
+        logger.info(
+            "Deterministic checks completed: %s issues in %s ms",
+            rule_result["total_issues"],
+            rule_result["execution_time_ms"],
+        )
 
         # ----------------------------------------------------
         # STEP 2: Verify each extracted claim
@@ -314,7 +342,7 @@ def analyze_draft(request: AnalyzeRequest):
             )
 
             # ------------------------------------------------
-            # STEP 5: Build frontend-compatible issue
+            # STEP 5: Build frontend-compatible AI issue
             # ------------------------------------------------
 
             issues.append(
@@ -345,7 +373,7 @@ def analyze_draft(request: AnalyzeRequest):
 
         logger.info(
             "Analysis completed. Extracted %s claims "
-            "and generated %s issues.",
+            "and generated %s total issues.",
             len(extraction.claims),
             len(issues),
         )
