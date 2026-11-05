@@ -1,4 +1,5 @@
 import logging
+import os
 import uuid
 from typing import List, Literal, Optional
 
@@ -41,14 +42,26 @@ app.include_router(facts_router)
 # CORS configuration for Next.js frontend
 # ============================================================
 
+# Configure production frontend origins using a comma-separated
+# FRONTEND_ORIGINS environment variable.
+DEFAULT_FRONTEND_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+]
+
+configured_origins = os.getenv("FRONTEND_ORIGINS", "")
+
+frontend_origins = (
+    [origin.strip().rstrip("/") for origin in configured_origins.split(",") if origin.strip()]
+    if configured_origins.strip()
+    else DEFAULT_FRONTEND_ORIGINS
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3001",
-    ],
+    allow_origins=frontend_origins,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -425,17 +438,11 @@ def analyze_draft(request: AnalyzeRequest):
 
 @app.get("/api/db-check")
 def database_check():
-
     try:
-
         with engine.connect() as connection:
-            connection.execute(
-                text("SELECT 1")
-            )
+            connection.execute(text("SELECT 1"))
 
-        tables = inspect(
-            engine
-        ).get_table_names()
+        tables = inspect(engine).get_table_names()
 
         return {
             "status": "connected",
@@ -444,9 +451,10 @@ def database_check():
             "tables": tables,
         }
 
-    except Exception as error:
+    except Exception:
+        logger.exception("Database connectivity check failed")
 
-        return {
-            "status": "error",
-            "message": str(error),
-        }
+        raise HTTPException(
+            status_code=503,
+            detail="Database connection check failed.",
+        )
