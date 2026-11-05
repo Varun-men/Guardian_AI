@@ -1,3 +1,4 @@
+
 name: Guardian AI CI
 
 on:
@@ -22,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install "fastapi[standard]" pytest httpx
+          pip install "fastapi[standard]" pytest httpx sqlalchemy psycopg2-binary "python-jose[cryptography]" "pwdlib[argon2]" python-dotenv
 
       - name: Run backend tests
         run: |
