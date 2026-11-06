@@ -250,10 +250,13 @@ def analyze_draft(request: AnalyzeRequest):
             # STEP 3: Retrieve evidence
             # ------------------------------------------------
 
-            evidence_items = retrieve_evidence(
-                claim.claim_text,
-                top_k=3,
-            )
+            if verification.evidence_passage_ids:
+                evidence_items = retrieve_evidence(
+                    claim.claim_text,
+                    top_k=3,
+                )
+            else:
+                evidence_items = []
 
             evidence_by_id = {
                 item["passage_id"]: item

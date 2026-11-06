@@ -54,8 +54,25 @@ def verify_claim(claim_id, claim_text):
             f"Version: {item['source_version']}\n"
         )
 
+    # This condition must be OUTSIDE the for loop.
     if not evidence:
-        evidence_text = "No relevant evidence was found."
+        logger.warning(
+            "No trusted evidence found for claim %s. "
+            "Returning unverified without calling Gemini.",
+            claim_id,
+        )
+
+        return VerificationResult(
+            claim_id=claim_id,
+            status="unverified",
+            explanation=(
+                "No trusted evidence is available in the evidence "
+                "database. This claim requires human review."
+            ),
+            confidence=0.0,
+            evidence_passage_ids=[],
+            needs_human_decision=True,
+        )
 
     prompt = f"""
 You are a strict factual claim verification system.
