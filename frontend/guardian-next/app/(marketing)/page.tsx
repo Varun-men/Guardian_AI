@@ -263,10 +263,10 @@ function NavMenu() {
           </div>
           {[
             { href: "/menu", label: "Full Platform Menu", icon: "☰", highlight: true },
-            { href: "/analyze", label: "Analyze a Draft", icon: "⚡", isLink: true },
-            { href: "/review", label: "Review Session", icon: "🛡️", isLink: true },
-            { href: "/admin", label: "Fact Registry", icon: "⚙️", isLink: true },
-            { href: "/ledger", label: "Living Ledger", icon: "📒", isLink: true },
+            { href: "/demo", label: "Explore Interactive Demo", icon: "⚡", isLink: true },
+            { href: "/demo", label: "Sample Review", icon: "🛡️", isLink: true },
+            { href: "/login", label: "Team Login", icon: "⚙️", isLink: true },
+            { href: "/demo", label: "Sample Ledger", icon: "📒", isLink: true },
             { href: "#product", label: "Our Offerings", icon: "◈" },
             { href: "#faq", label: "FAQ & Help", icon: "?" },
           ].map((item) => {
@@ -809,14 +809,14 @@ export default function Landing() {
                 transition: "opacity 1.3s cubic-bezier(0.16, 1, 0.3, 1) 600ms, transform 1.3s cubic-bezier(0.16, 1, 0.3, 1) 600ms",
               }}
             >
-              <Link href="/analyze" className="hero-btn hero-btn-primary">
+              <Link href="/demo" className="hero-btn hero-btn-primary">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                 </svg>
-                Analyze a draft
+                Explore interactive demo
               </Link>
-              <Link href="/ledger" className="hero-btn hero-btn-secondary">
-                See living ledger
+              <Link href="/demo" className="hero-btn hero-btn-secondary">
+                See sample demo
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
@@ -887,8 +887,8 @@ export default function Landing() {
                   Each flagged claim carries a numbered badge that directly matches its finding, quoting the exact policy or pricing passage beside it.
                 </p>
                 <div className="flex items-center gap-4 pt-2">
-                  <Link href="/analyze" className="hero-btn hero-btn-primary">
-                    Try analysis now →
+                  <Link href="/demo" className="hero-btn hero-btn-primary">
+                    Explore demo →
                   </Link>
                   <Link href="/menu" className="hero-btn hero-btn-secondary">
                     View menu
@@ -1004,8 +1004,8 @@ export default function Landing() {
                 <p style={{ color: C.text2, lineHeight: 1.8, margin: 0, fontSize: 15 }}>
                   Guardian flags and suggests. A reviewer approves every modification, and each decision is recorded into an append-only audit log.
                 </p>
-                <Link href="/analyze" className="hero-btn hero-btn-primary" style={{ width: "fit-content", marginTop: 8 }}>
-                  Open verify studio →
+                <Link href="/demo" className="hero-btn hero-btn-primary" style={{ width: "fit-content", marginTop: 8 }}>
+                  Explore demo →
                 </Link>
               </div>
 
@@ -1078,16 +1078,16 @@ export default function Landing() {
             <Link href="/menu" style={{ fontSize: 13.5, color: C.yellow, fontWeight: 700, textDecoration: "none" }}>
               Menu
             </Link>
-            <Link href="/analyze" style={{ fontSize: 13.5, color: C.text2, textDecoration: "none" }}>
+            <Link href="/demo" style={{ fontSize: 13.5, color: C.text2, textDecoration: "none" }}>
               Analyze
             </Link>
-            <Link href="/review" style={{ fontSize: 13.5, color: C.text2, textDecoration: "none" }}>
+            <Link href="/demo" style={{ fontSize: 13.5, color: C.text2, textDecoration: "none" }}>
               Review
             </Link>
-            <Link href="/admin" style={{ fontSize: 13.5, color: C.text2, textDecoration: "none" }}>
+            <Link href="/login" style={{ fontSize: 13.5, color: C.text2, textDecoration: "none" }}>
               Admin
             </Link>
-            <Link href="/ledger" style={{ fontSize: 13.5, color: C.text2, textDecoration: "none" }}>
+            <Link href="/demo" style={{ fontSize: 13.5, color: C.text2, textDecoration: "none" }}>
               Ledger
             </Link>
           </div>

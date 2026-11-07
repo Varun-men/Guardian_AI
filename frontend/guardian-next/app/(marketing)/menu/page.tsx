@@ -1,9 +1,9 @@
 "use client";
 import Link from "next/link";
-import { useLedger } from "@/lib/ledger-store";
+
 
 export default function MenuPage() {
-  const { facts, posts, staleCount } = useLedger();
+
 
   const sections = [
     {
@@ -12,7 +12,7 @@ export default function MenuPage() {
       color: "#ff6b00",
       links: [
         {
-          href: "/analyze",
+          href: "/demo",
           name: "Analyze Draft Copy",
           desc: "Run instant deterministic rule checks and extract claims for AI retrieval verification.",
           badge: "Pipeline",
@@ -23,7 +23,7 @@ export default function MenuPage() {
           )
         },
         {
-          href: "/review",
+          href: "/demo",
           name: "Review Session & Citations",
           desc: "Interactive proof sheet with claim-by-claim citations, confidence meter, and one-click fixes.",
           badge: "Human-in-Loop",
@@ -34,10 +34,10 @@ export default function MenuPage() {
           )
         },
         {
-          href: "/admin",
-          name: "Fact Registry",
+          href: "/login",
+          name: "Team Login",
           desc: "Single source of truth for pricing, claims, and policies. Editing a fact propagates to linked posts.",
-          badge: `${facts.length} Facts Active`,
+          badge: "Team Access",
           icon: (
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <circle cx="12" cy="12" r="3" />
@@ -46,11 +46,11 @@ export default function MenuPage() {
           )
         },
         {
-          href: "/ledger",
+          href: "/demo",
           name: "Living Claim Ledger",
           desc: "Audit trail and post inventory. Highlights pricing drift and stale statements instantly.",
-          badge: staleCount > 0 ? `${staleCount} Stale` : "In Sync",
-          badgeColor: staleCount > 0 ? "#ef4444" : "#10b981",
+          badge: "Sample Ledger",
+          badgeColor: "#ff6b00",
           icon: (
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
@@ -181,7 +181,7 @@ export default function MenuPage() {
                       <h3 className="text-lg font-bold text-white group-hover:text-[#ff6b00] transition-colors flex items-center gap-2">
                         {link.name}
                         <span className="text-xs text-[#ff6b00] opacity-0 group-hover:opacity-100 transition-opacity">
-                          →
+                          â†’
                         </span>
                       </h3>
                       <p className="text-sm text-[#a1a1aa] mt-1.5 leading-relaxed">
@@ -205,10 +205,10 @@ export default function MenuPage() {
           </div>
           <div className="flex items-center gap-3">
             <Link
-              href="/analyze"
+              href="/demo"
               className="btn btn-primary px-6 py-2.5 h-auto text-sm font-bold shadow-[0_0_20px_rgba(255,107,0,0.4)]"
             >
-              Open Analyze Studio →
+              Explore Public Demo â†’
             </Link>
           </div>
         </div>
