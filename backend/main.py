@@ -1,4 +1,4 @@
-
+﻿
 import logging
 import os
 import uuid
@@ -259,7 +259,7 @@ def analyze_draft(
                 # Preserve the claim for manual review.
                 issues.append(
                     Issue(
-                        id=f"issue-{claim.claim_id}",
+                        id=f"issue-{uuid.uuid4()}",
                         claim_id=claim.claim_id,
                         severity="MEDIUM",
                         category="FACTUAL_CLAIM",
@@ -400,7 +400,7 @@ def analyze_draft(
 
             issues.append(
                 Issue(
-                    id=f"issue-{claim.claim_id}",
+                    id=f"issue-{uuid.uuid4()}",
                     claim_id=claim.claim_id,
                     severity=severity,
                     category="FACTUAL_CLAIM",
