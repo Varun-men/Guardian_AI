@@ -1,15 +1,15 @@
-
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useLedgerStore } from "@/lib/ledger-store";
 
-/* ─── Theme Tokens ─── */
+/* ─── Tokens ─── */
 const C = {
   neon: "#ff6b00",
   yellow: "#ff9500",
+  blue: "#d44a00",
   text: "#ffffff",
   sub: "#a1a1aa",
   muted: "#71717a",
@@ -25,10 +25,10 @@ const PAGE_LABELS: Record<string, string> = {
   "/analyze": "Analyze Draft",
   "/admin": "Fact Registry",
   "/ledger": "Living Ledger",
-  "/analytics": "Analytics",
+  "/analytics": "Analytics & Metrics",
 };
 
-/* ─── SVG Icons ─── */
+/* ─── Minimal SVG Icons ─── */
 const Ico = {
   shield: (s = 20) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -63,6 +63,14 @@ const Ico = {
     </svg>
   ),
 
+  analytics: (s = 15) => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10" />
+      <line x1="12" y1="20" x2="12" y2="4" />
+      <line x1="6" y1="20" x2="6" y2="14" />
+    </svg>
+  ),
+
   search: (s = 15) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
       <circle cx="11" cy="11" r="8" />
@@ -93,6 +101,7 @@ const NAV_TABS = [
   { href: "/review", label: "Review", icon: Ico.review },
   { href: "/admin", label: "Fact Registry", icon: Ico.admin },
   { href: "/ledger", label: "Ledger", icon: Ico.ledger },
+  { href: "/analytics", label: "Analytics", icon: Ico.analytics },
 ];
 
 export default function Shell({
@@ -101,12 +110,70 @@ export default function Shell({
   children: React.ReactNode;
 }) {
   const path = usePathname();
+  const router = useRouter();
 
-  const { facts, posts, staleCount } = useLedgerStore();
+  const { facts, posts, staleCount, analysis } = useLedgerStore();
 
   const [search, setSearch] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const searchWrapRef = useRef<HTMLDivElement | null>(null);
 
-  const pageLabel = PAGE_LABELS[path] ?? "Guardian AI";
+  // Keyboard shortcut Ctrl+K / Cmd+K to focus search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        setSearchOpen(true);
+      } else if (e.key === "Escape") {
+        setSearchOpen(false);
+        searchInputRef.current?.blur();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Click outside search wrap to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchWrapRef.current && !searchWrapRef.current.contains(e.target as Node)) {
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Live search filtering across Facts, Posts, and Analysis Issues
+  const q = search.trim().toLowerCase();
+  const matchedFacts = q
+    ? facts.filter(
+        (f) =>
+          f.label.toLowerCase().includes(q) ||
+          f.id.toLowerCase().includes(q) ||
+          String(f.value).includes(q)
+      )
+    : [];
+  const matchedPosts = q
+    ? posts.filter(
+        (p) =>
+          p.title.toLowerCase().includes(q) ||
+          p.text.toLowerCase().includes(q) ||
+          p.token.toLowerCase().includes(q)
+      )
+    : [];
+  const matchedIssues = q
+    ? (analysis?.issues ?? []).filter(
+        (i) =>
+          i.flagged_text.toLowerCase().includes(q) ||
+          i.explanation.toLowerCase().includes(q) ||
+          i.category.toLowerCase().includes(q)
+      )
+    : [];
+
+  const totalResults = matchedFacts.length + matchedPosts.length + matchedIssues.length;
 
   return (
     <>
@@ -146,9 +213,9 @@ export default function Shell({
 
         .top-search-wrap {
           position: relative;
-          width: 220px;
+          width: 260px;
           flex-shrink: 1;
-          min-width: 140px;
+          min-width: 160px;
         }
 
         .top-search-wrap input {
@@ -156,7 +223,7 @@ export default function Shell({
           background: rgba(16,16,18,0.95);
           border: 1px solid rgba(255,107,0,0.22);
           border-radius: 10px;
-          padding: 9px 12px 9px 36px;
+          padding: 9px 48px 9px 36px;
           font-size: 13px;
           color: #ffffff;
           outline: none;
@@ -171,6 +238,42 @@ export default function Shell({
 
         .top-search-wrap input::placeholder {
           color: #71717a;
+        }
+
+        .search-results-dropdown {
+          position: absolute;
+          top: calc(100% + 8px);
+          right: 0;
+          width: 380px;
+          max-height: 440px;
+          overflow-y: auto;
+          background: #0d0d10;
+          border: 1px solid rgba(255,107,0,0.25);
+          border-radius: 14px;
+          box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,107,0,0.15);
+          z-index: 100;
+          padding: 10px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .search-item {
+          padding: 9px 12px;
+          border-radius: 8px;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          text-decoration: none;
+          background: rgba(255,255,255,0.02);
+          border: 1px solid transparent;
+          transition: all .15s ease;
+          cursor: pointer;
+        }
+
+        .search-item:hover {
+          background: rgba(255,107,0,0.1);
+          border-color: rgba(255,107,0,0.3);
         }
 
         .home-btn {
@@ -237,7 +340,7 @@ export default function Shell({
           }
 
           .top-search-wrap {
-            width: 170px;
+            width: 180px;
           }
 
           .shell-main {
@@ -276,6 +379,12 @@ export default function Shell({
           .top-search-wrap {
             flex: 1;
             min-width: 150px;
+          }
+
+          .search-results-dropdown {
+            width: 100%;
+            right: 0;
+            left: 0;
           }
 
           .shell-profile {
@@ -455,7 +564,7 @@ export default function Shell({
               }}
             />
 
-            {/* Navigation */}
+            {/* Navigation Tabs */}
             <nav
               className="shell-nav-scroll"
               aria-label="Main navigation"
@@ -506,7 +615,7 @@ export default function Shell({
             </nav>
           </div>
 
-          {/* Right: Search and Statistics */}
+          {/* Right: Search, Stats, and Actions */}
           <div
             className="shell-header-right"
             style={{
@@ -516,8 +625,8 @@ export default function Shell({
               flexShrink: 0,
             }}
           >
-            {/* Search */}
-            <div className="top-search-wrap">
+            {/* Search Box with Live Results Dropdown */}
+            <div className="top-search-wrap" ref={searchWrapRef}>
               <span
                 style={{
                   position: "absolute",
@@ -533,17 +642,160 @@ export default function Shell({
               </span>
 
               <input
+                ref={searchInputRef}
                 type="search"
                 aria-label="Search workspace"
-                placeholder="Search workspace..."
+                placeholder="Search (⌘K)..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onFocus={() => setSearchOpen(true)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setSearchOpen(true);
+                }}
               />
+
+              <span
+                style={{
+                  position: "absolute",
+                  right: 9,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  fontSize: 10,
+                  fontFamily: "ui-monospace,monospace",
+                  color: C.muted,
+                  padding: "1px 5px",
+                  borderRadius: 4,
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  pointerEvents: "none",
+                }}
+              >
+                ⌘K
+              </span>
+
+              {/* Live Search Dropdown */}
+              {searchOpen && q && (
+                <div className="search-results-dropdown">
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "4px 8px 6px",
+                      borderBottom: "1px solid rgba(255,255,255,0.07)",
+                      fontSize: 11,
+                      color: C.muted,
+                    }}
+                  >
+                    <span>
+                      {totalResults} result{totalResults === 1 ? "" : "s"} for &ldquo;{search}&rdquo;
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setSearchOpen(false)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: C.muted,
+                        fontSize: 11,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Esc to close
+                    </button>
+                  </div>
+
+                  {totalResults === 0 ? (
+                    <div style={{ padding: "20px 12px", textAlign: "center", fontSize: 13, color: C.muted }}>
+                      No matches found in facts, posts, or findings.
+                    </div>
+                  ) : (
+                    <>
+                      {/* Facts Matches */}
+                      {matchedFacts.length > 0 && (
+                        <div>
+                          <div style={{ fontSize: 10, fontWeight: 800, color: C.neon, letterSpacing: ".08em", padding: "4px 8px", textTransform: "uppercase" }}>
+                            Facts ({matchedFacts.length})
+                          </div>
+                          {matchedFacts.map((f) => (
+                            <Link
+                              key={f.id}
+                              href="/admin"
+                              className="search-item"
+                              onClick={() => setSearchOpen(false)}
+                            >
+                              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", display: "flex", justifyContent: "space-between" }}>
+                                <span>{f.label}</span>
+                                <span style={{ color: C.neon }}>${f.value}</span>
+                              </div>
+                              <div style={{ fontSize: 11, color: C.muted, fontFamily: "monospace" }}>
+                                ID: {f.id} · v{f.version}
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Posts Matches */}
+                      {matchedPosts.length > 0 && (
+                        <div>
+                          <div style={{ fontSize: 10, fontWeight: 800, color: C.yellow, letterSpacing: ".08em", padding: "4px 8px", textTransform: "uppercase" }}>
+                            Posts ({matchedPosts.length})
+                          </div>
+                          {matchedPosts.map((p) => (
+                            <Link
+                              key={p.id}
+                              href="/ledger"
+                              className="search-item"
+                              onClick={() => setSearchOpen(false)}
+                            >
+                              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", display: "flex", justifyContent: "space-between" }}>
+                                <span>{p.title}</span>
+                                <span style={{ fontSize: 11, color: p.status === "stale" ? C.high : C.ok }}>
+                                  {p.status}
+                                </span>
+                              </div>
+                              <div style={{ fontSize: 11.5, color: C.sub, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                {p.text}
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Findings Matches */}
+                      {matchedIssues.length > 0 && (
+                        <div>
+                          <div style={{ fontSize: 10, fontWeight: 800, color: "#38bdf8", letterSpacing: ".08em", padding: "4px 8px", textTransform: "uppercase" }}>
+                            Findings ({matchedIssues.length})
+                          </div>
+                          {matchedIssues.map((i) => (
+                            <Link
+                              key={i.id}
+                              href="/review"
+                              className="search-item"
+                              onClick={() => setSearchOpen(false)}
+                            >
+                              <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff" }}>
+                                &ldquo;{i.flagged_text}&rdquo;
+                              </div>
+                              <div style={{ fontSize: 11, color: C.sub }}>
+                                {i.explanation}
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Stale Alert */}
             {staleCount > 0 && (
-              <div
+              <Link
+                href="/ledger"
                 className="shell-stale-alert"
                 role="status"
                 style={{
@@ -558,11 +810,12 @@ export default function Shell({
                   fontWeight: 700,
                   color: C.high,
                   whiteSpace: "nowrap",
+                  textDecoration: "none",
                 }}
               >
                 {Ico.warn()}
                 {staleCount} stale
-              </div>
+              </Link>
             )}
 
             {/* Ledger Statistics */}

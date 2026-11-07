@@ -40,9 +40,16 @@ class VerificationResult(BaseModel):
     needs_human_decision: bool
 
 
-def verify_claim(claim_id, claim_text):
+def verify_claim(claim_id, claim_text, evidence=None):
+    """
+    Verify a claim using supplied trusted evidence.
 
-    evidence = retrieve_evidence(claim_text, top_k=3)
+    If evidence is not supplied, retrieve it using the legacy
+    retrieval path for backward compatibility.
+    """
+
+    if evidence is None:
+        evidence = retrieve_evidence(claim_text, top_k=3)
 
     evidence_text = ""
 
@@ -54,7 +61,6 @@ def verify_claim(claim_id, claim_text):
             f"Version: {item['source_version']}\n"
         )
 
-    # This condition must be OUTSIDE the for loop.
     if not evidence:
         logger.warning(
             "No trusted evidence found for claim %s. "

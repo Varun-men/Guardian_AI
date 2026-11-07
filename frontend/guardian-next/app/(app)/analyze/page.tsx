@@ -1,87 +1,244 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { analyzeDraft } from "@/lib/analyze";
-import { mockAnalyze } from "@/lib/mock";
 import { useLedger } from "@/lib/ledger-store";
 
+type Scenario = {
+  id: string;
+  name: string;
+  tag: string;
+  badgeColor: string;
+  description: string;
+  content: string;
+  hasImage: boolean;
+  imageFilename: string;
+  imageAlt: string;
+};
+
+const SCENARIOS: Scenario[] = [
+  {
+    id: "standard",
+    name: "Orbit Launch",
+    tag: "MIXED DEMO",
+    badgeColor: "#ff6b00",
+    description: "Comparative speed claim, verified starter pricing fact ($29), and missing image alt text.",
+    content: "Meet Orbit. Our app is 3x faster than any competitor. Plans start at $29.",
+    hasImage: true,
+    imageFilename: "orbit-hero.png",
+    imageAlt: "",
+  },
+  {
+    id: "comparative",
+    name: "Competitor Comparison",
+    tag: "HIGH RISK",
+    badgeColor: "#ef4444",
+    description: "Flags unsubstantiated comparative claims against competitors without verified benchmarks.",
+    content: "Orbit is twice as fast as Linear and half the cost of Jira. Built for modern developer velocity.",
+    hasImage: false,
+    imageFilename: "",
+    imageAlt: "",
+  },
+  {
+    id: "drift",
+    name: "Pricing Drift",
+    tag: "LEDGER DRIFT",
+    badgeColor: "#ff9500",
+    description: "Claims an outdated price ($69/mo) when the verified Fact Registry lists Orbit Pro at $79/mo.",
+    content: "Get full access with Orbit Pro for just $69 per month. All advanced security rules included.",
+    hasImage: false,
+    imageFilename: "",
+    imageAlt: "",
+  },
+  {
+    id: "accessibility",
+    name: "Accessibility",
+    tag: "WCAG 1.1.1",
+    badgeColor: "#b97aff",
+    description: "Deterministic accessibility check: hero banner image missing alt description attribute.",
+    content: "Discover next-generation claim verification and deterministic compliance with Orbit.",
+    hasImage: true,
+    imageFilename: "dashboard-preview.png",
+    imageAlt: "",
+  },
+  {
+    id: "clean",
+    name: "Compliant & Verified",
+    tag: "100% CLEAN",
+    badgeColor: "#10b981",
+    description: "All statements align with approved guidelines; image has descriptive alt text.",
+    content: "Meet Orbit. Our app is built for speed and engineering rigor. Plans start at $29.",
+    hasImage: true,
+    imageFilename: "orbit-logo.png",
+    imageAlt: "Orbit verified brand mark",
+  },
+];
+
 const STAGES = [
-  "Running rule checks for banned terms & competitor mentions",
-  "Extracting claims & retrieving verified knowledge evidence",
-  "Verifying citations & policy compliance"
+  "Running deterministic rules for banned terms & competitor mentions",
+  "Extracting factual claims & retrieving verified knowledge evidence",
+  "Verifying citations & policy compliance against Fact Registry",
 ];
 
 export default function AnalyzePage() {
   const router = useRouter();
   const { setAnalysis } = useLedger();
-  const [text, setText] = useState(mockAnalyze.content);
-  const [hasImage, setHasImage] = useState(true);
+
+  const [activeScenario, setActiveScenario] = useState<string>("standard");
+  const [text, setText] = useState(SCENARIOS[0].content);
+  const [hasImage, setHasImage] = useState(SCENARIOS[0].hasImage);
+  const [imageFilename, setImageFilename] = useState(SCENARIOS[0].imageFilename);
+  const [imageAlt, setImageAlt] = useState(SCENARIOS[0].imageAlt);
+
   const [stage, setStage] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const run = async () => {
+  const selectScenario = (sc: Scenario) => {
+    setActiveScenario(sc.id);
+    setText(sc.content);
+    setHasImage(sc.hasImage);
+    setImageFilename(sc.imageFilename);
+    setImageAlt(sc.imageAlt);
     setError(null);
-    setStage(0);
-    const t1 = setTimeout(() => setStage(1), 500);
-    const t2 = setTimeout(() => setStage(2), 1000);
-    try {
-      const images = hasImage
-  ? [
-      {
-        filename: "orbit-hero.png",
-        alt: "",
-      },
-    ]
-  : [];
-
-const res = await analyzeDraft(text, images);
-      setAnalysis(res);
-      router.push("/review");
-    } catch {
-      setError("The analysis service did not respond. Check that the backend is running, then try again.");
-      setStage(null);
-    } finally {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    }
   };
+
+
+const run = async () => {
+  if (!text.trim()) {
+    setError("Please enter draft content before analyzing.");
+    return;
+  }
+
+  setError(null);
+  setStage(0);
+
+  const t1 = setTimeout(() => setStage(1), 450);
+  const t2 = setTimeout(() => setStage(2), 950);
+
+  const images = hasImage
+    ? [
+        {
+          filename: imageFilename || "orbit-hero.png",
+          alt: imageAlt,
+        },
+      ]
+    : [];
+
+  try {
+    const res = await analyzeDraft(text, images);
+
+    if (!res?.draft_id || !Array.isArray(res.issues)) {
+      throw new Error("Backend returned an invalid analysis response.");
+    }
+
+    setAnalysis(res);
+    router.push("/review");
+  } catch (err) {
+    setError(
+      err instanceof Error
+        ? err.message
+        : "Analysis failed. Please check the backend connection and try again."
+    );
+  } finally {
+    clearTimeout(t1);
+    clearTimeout(t2);
+    setStage(null);
+  }
+};
+
+
+  const currentScenarioObj = SCENARIOS.find((s) => s.id === activeScenario);
 
   return (
     <div className="flex flex-col gap-6 max-w-4xl">
       <header>
         <h1 className="text-3xl font-bold tracking-tight text-white font-[family-name:var(--font-display)]">
-          Analyze a draft
+          Analyze Draft Copy
         </h1>
         <p className="text-[#a1a1aa] text-sm mt-1">
-          Paste your copy below. Deterministic rule checks run first in milliseconds, followed by citation retrieval and verification.
+          Paste marketing copy or select a pre-configured scenario below. Deterministic rule checks run first in milliseconds, followed by citation retrieval and verification.
         </p>
       </header>
 
+      {/* ─── Scenario Selector Carousel / Pills ─── */}
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-[#a1a1aa]">
+          <span>Select Scenario Preset:</span>
+          <span>5 Available Test Cases</span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+          {SCENARIOS.map((s) => {
+            const isSelected = activeScenario === s.id;
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => selectScenario(s)}
+                className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between gap-2 ${
+                  isSelected
+                    ? "border-[#ff6b00] bg-[#ff6b00]/12 shadow-[0_0_15px_rgba(255,107,0,0.2)]"
+                    : "border-white/10 bg-[#0c0c0e] hover:border-[#ff6b00]/40"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-1 w-full">
+                  <span
+                    className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded"
+                    style={{
+                      background: `${s.badgeColor}20`,
+                      color: s.badgeColor,
+                      border: `1px solid ${s.badgeColor}40`,
+                    }}
+                  >
+                    {s.tag}
+                  </span>
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-white leading-tight">
+                    {s.name}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {currentScenarioObj && (
+          <div className="p-3 rounded-xl bg-black/40 border border-white/5 text-xs text-[#a1a1aa] flex items-center gap-2">
+            <span className="text-[#ff6b00] font-bold">Preset Focus:</span>
+            <span>{currentScenarioObj.description}</span>
+          </div>
+        )}
+      </section>
+
+      {/* ─── Draft Input Form ─── */}
       <section className="panel p-6 flex flex-col gap-5 border border-[#ff6b00]/25 shadow-[0_12px_40px_rgba(0,0,0,0.5)]">
         <div className="flex items-center justify-between border-b border-[#ff6b00]/15 pb-3">
           <label htmlFor="draft" className="font-semibold text-sm text-white flex items-center gap-2">
-            <span>Draft Copy</span>
+            <span>Draft Copy Content</span>
             <span className="text-xs text-[#ff9500] font-mono">• Ready for evaluation</span>
           </label>
           <button
             type="button"
-            onClick={() => setText(mockAnalyze.content)}
-            className="text-xs text-[#ff6b00] hover:underline font-mono"
+            onClick={() => setText("")}
+            className="text-xs text-[#a1a1aa] hover:text-[#ff6b00] font-mono"
           >
-            Reset sample draft
+            Clear text
           </button>
         </div>
 
         <textarea
           id="draft"
-          rows={7}
+          rows={6}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Paste draft copy to check..."
+          placeholder="Paste draft copy to check against brand rules and fact sources..."
           className="panel-raised p-4 w-full text-[1.02rem] leading-7 resize-y text-white font-sans border border-white/10 focus:outline-none focus:border-[#ff6b00] focus:ring-1 focus:ring-[#ff6b00]"
         />
 
-        <div className="flex items-center justify-between flex-wrap gap-4 pt-1">
+        {/* ─── Media & Image Settings ─── */}
+        <div className="p-4 rounded-xl bg-black/40 border border-white/5 flex flex-col gap-3">
           <label className="flex items-center gap-3 text-sm text-white cursor-pointer select-none">
             <input
               type="checkbox"
@@ -89,10 +246,47 @@ const res = await analyzeDraft(text, images);
               onChange={(e) => setHasImage(e.target.checked)}
               className="w-4 h-4 rounded border-gray-600 accent-[#ff6b00] cursor-pointer"
             />
-            <span>
-              Draft includes <span className="font-mono text-xs text-[#ff6b00]">orbit-hero.png</span> with no alt text
+            <span className="font-semibold text-sm">
+              Draft includes media / image asset
             </span>
           </label>
+
+          {hasImage && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-white/5">
+              <div>
+                <label className="text-xs text-[#a1a1aa] font-mono block mb-1">
+                  Filename / Asset Key
+                </label>
+                <input
+                  type="text"
+                  value={imageFilename}
+                  onChange={(e) => setImageFilename(e.target.value)}
+                  placeholder="e.g. orbit-hero.png"
+                  className="panel-raised px-3 py-1.5 w-full text-xs font-mono text-white focus:outline-none focus:border-[#ff6b00]"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-[#a1a1aa] font-mono block mb-1">
+                  Image Alt Text (WCAG Check)
+                </label>
+                <input
+                  type="text"
+                  value={imageAlt}
+                  onChange={(e) => setImageAlt(e.target.value)}
+                  placeholder="Leave empty to trigger missing-alt rule"
+                  className="panel-raised px-3 py-1.5 w-full text-xs font-mono text-white focus:outline-none focus:border-[#ff6b00]"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ─── Actions & Analyze Trigger ─── */}
+        <div className="flex items-center justify-between flex-wrap gap-4 pt-1">
+          <div className="text-xs text-[#a1a1aa] font-mono">
+            {text.split(/\s+/).filter(Boolean).length} words · {text.length} characters
+          </div>
 
           <div className="flex items-center gap-4">
             {error && (
@@ -123,11 +317,12 @@ const res = await analyzeDraft(text, images);
         </div>
       </section>
 
+      {/* ─── Pipeline Progress Visualizer ─── */}
       {stage !== null && (
         <div className="panel p-6 flex flex-col gap-3.5 border border-[#ff6b00]/30 bg-[#ff6b00]/5 animate-fadeIn">
           <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-[#ff6b00]">
             <span>Verification Pipeline Progress</span>
-            <span className="text-[#ff9500]">Active</span>
+            <span className="text-[#ff9500] animate-pulse">Running checks</span>
           </div>
           <ul className="flex flex-col gap-2.5 text-sm" aria-live="polite">
             {STAGES.map((s, k) => (

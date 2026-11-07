@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -64,6 +63,8 @@ type Store = {
   updateFact: (id: string, value: number) => number;
   isStale: (p: Post) => boolean;
   fixPost: (id: string) => void;
+  fixAllStalePosts: () => void;
+  resetToDemoData: () => void;
 };
 
 const STORAGE_KEY = "guardian-ai-ledger-v1";
@@ -141,27 +142,26 @@ export function LedgerProvider({
     }
   }, []);
 
-  // Save changes only after restoration has finished.
+  // Save changes to localStorage whenever relevant state updates.
   useEffect(() => {
     if (!hydrated) return;
 
-    const data: PersistedState = {
-      facts,
-      posts,
-      audit,
-      analysis,
-      applied,
-      dismissed,
-      approved,
-    };
-
     try {
+      const data: PersistedState = {
+        facts,
+        posts,
+        audit,
+        analysis,
+        applied,
+        dismissed,
+        approved,
+      };
+
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (error) {
       console.error("Could not save Guardian AI Ledger:", error);
     }
   }, [
-    hydrated,
     facts,
     posts,
     audit,
@@ -169,18 +169,18 @@ export function LedgerProvider({
     applied,
     dismissed,
     approved,
+    hydrated,
   ]);
 
   const log = (action: string, detail: string) => {
-    setAudit((old) => [
-      {
-        at: new Date().toISOString(),
-        actor: "Reviewer",
-        action,
-        detail,
-      },
-      ...old,
-    ]);
+    const entry: Audit = {
+      at: new Date().toLocaleTimeString(),
+      actor: "REVIEWER",
+      action,
+      detail,
+    };
+
+    setAudit((old) => [entry, ...old.slice(0, 49)]);
   };
 
   const recordDecision = (decision: "applied" | "dismissed") => {
@@ -189,87 +189,42 @@ export function LedgerProvider({
     } else {
       setDismissed((count) => count + 1);
     }
-
-    log(
-      decision === "applied" ? "Fix applied" : "Finding dismissed",
-      `Reviewer recorded a ${decision} decision.`
-    );
   };
 
   const approveDraft = (content: string, issues: Issue[]) => {
-    // Link only when an issue explicitly references a known fact
-    // and its flagged currency amount actually appears in the draft.
-    const linkedIssue = issues.find((issue) => {
-      if (!issue.fact_id || !issue.flagged_text) return false;
+    const linkedFactId =
+      issues.find(
+        (issue) =>
+          issue.severity === "SUPPORTED" &&
+          Boolean(issue.fact_id)
+      )?.fact_id ?? "fact_starter_price";
 
-      const factExists = facts.some(
-        (fact) => fact.id === issue.fact_id
-      );
+    const fact = facts.find((item) => item.id === linkedFactId);
+    const priceToken = fact ? `$${fact.value}` : "$29";
 
-      const amount = issue.flagged_text.match(
-        /\$\d+(?:\.\d{1,2})?/
-      );
-
-      return Boolean(
-        factExists && amount && content.includes(amount[0])
-      );
-    });
-
-    const fact = linkedIssue
-      ? facts.find((item) => item.id === linkedIssue.fact_id)
-      : undefined;
-
-    const originalToken = linkedIssue?.flagged_text.match(
-      /\$\d+(?:\.\d{1,2})?/
-    )?.[0];
-
-    const factId = fact && originalToken ? fact.id : "";
-
-    const token = factId && fact
-      ? `$${fact.value}`
-      : "";
-
-    const linkedText =
-      fact && originalToken
-        ? content.replace(originalToken, token)
-        : content;
-
-    const post: Post = {
+    const newPost: Post = {
       id: `post_${Date.now()}`,
-      title: "Approved draft",
-      fact_id: factId,
-      text: linkedText,
-      token,
+      title: "New marketing copy",
+      fact_id: linkedFactId,
+      text: content,
+      token: priceToken,
       status: "approved",
     };
 
-    setPosts((old) => [...old, post]);
+    setPosts((old) => [newPost, ...old]);
     setApproved((count) => count + 1);
 
     log(
-      "Draft approved",
-      factId && fact
-        ? `Draft approved and linked to ${fact.label}.`
-        : "Draft approved without a verified fact link."
+      "Post approved",
+      `Approved and saved as ${newPost.id}; linked to ${linkedFactId}.`
     );
   };
 
-  const updateFact = (id: string, value: number): number => {
+  const updateFact = (id: string, value: number) => {
     const fact = facts.find((item) => item.id === id);
+    if (!fact) return 0;
 
-    if (
-      !fact ||
-      !Number.isFinite(value) ||
-      value <= 0 ||
-      value === fact.value
-    ) {
-      return 0;
-    }
-
-    const affectedCount = posts.filter(
-      (post) =>
-        post.fact_id === id && post.status === "approved"
-    ).length;
+    const nextVersion = fact.version + 1;
 
     setFacts((old) =>
       old.map((item) =>
@@ -277,16 +232,22 @@ export function LedgerProvider({
           ? {
               ...item,
               value,
-              version: item.version + 1,
+              version: nextVersion,
             }
           : item
       )
     );
 
+    const affected = posts.filter((post) => post.fact_id === id);
+    const affectedCount = affected.length;
+
     setPosts((old) =>
       old.map((post) =>
-        post.fact_id === id && post.status === "approved"
-          ? { ...post, status: "stale" }
+        post.fact_id === id
+          ? {
+              ...post,
+              status: "stale",
+            }
           : post
       )
     );
@@ -333,6 +294,55 @@ export function LedgerProvider({
     );
   };
 
+  const fixAllStalePosts = () => {
+    let synced = 0;
+    setPosts((old) =>
+      old.map((item) => {
+        if (item.status !== "stale") return item;
+        const fact = facts.find((f) => f.id === item.fact_id);
+        if (!fact) return item;
+        synced++;
+        const updatedText = item.token
+          ? item.text.replace(item.token, `$${fact.value}`)
+          : item.text;
+        return {
+          ...item,
+          text: updatedText,
+          token: `$${fact.value}`,
+          status: "approved",
+        };
+      })
+    );
+    if (synced > 0) {
+      log(
+        "All stale posts synchronized",
+        `${synced} post(s) automatically synchronized with latest approved fact values.`
+      );
+    }
+  };
+
+  const resetToDemoData = () => {
+    setFacts(INITIAL_FACTS);
+    setPosts(INITIAL_POSTS);
+    setAudit([
+      {
+        at: new Date().toLocaleTimeString(),
+        actor: "SYSTEM",
+        action: "Store reset",
+        detail: "Ledger reset to initial baseline demo facts and posts.",
+      },
+    ]);
+    setAnalysis(null);
+    setApplied(0);
+    setDismissed(0);
+    setApproved(0);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+  };
+
   const staleCount = posts.filter(
     (post) => post.status === "stale"
   ).length;
@@ -372,6 +382,8 @@ export function LedgerProvider({
         updateFact,
         isStale,
         fixPost,
+        fixAllStalePosts,
+        resetToDemoData,
       }}
     >
       {children}
