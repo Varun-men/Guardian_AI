@@ -30,12 +30,12 @@ export default function LedgerPage() {
       if (filter === "unverified") return unverified;
       return true;
     });
-  }, [posts, filter, facts]);
+  }, [posts, filter, facts, isStale]);
 
   const handleSyncAll = () => {
     fixAllStalePosts();
-    setFeedback(`Synchronized all stale posts with the latest Fact Registry prices.`);
-    setTimeout(() => setFeedback(null), 3000);
+    setFeedback(`Synchronized all stale posts with the latest Fact Registry values.`);
+    setTimeout(() => setFeedback(null), 3500);
   };
 
   const handleReset = () => {
@@ -47,56 +47,103 @@ export default function LedgerPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-5xl">
+    <div style={{ display: "flex", flexDirection: "column", gap: 32, maxWidth: 1140, margin: "0 auto" }}>
       {/* ─── Header & Sync Controls ─── */}
-      <header className="flex flex-wrap items-end justify-between gap-4">
+      <header
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+          gap: 20,
+          flexWrap: "wrap",
+        }}
+      >
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white font-[family-name:var(--font-display)]">
+          <p className="kick" style={{ margin: "0 0 10px" }}>
+            Append-only verification
+          </p>
+          <h1
+            style={{
+              fontSize: "clamp(32px, 4.5vw, 48px)",
+              fontWeight: 500,
+              lineHeight: 1.1,
+              letterSpacing: "-0.03em",
+              margin: "0 0 8px",
+            }}
+          >
             Living Claim Ledger
           </h1>
 
-          <p className="text-[#a1a1aa] text-sm mt-1">
-            Approved claims remain linked to verified facts. Changing an
-            upstream fact in the Registry flags every downstream post in real time.
+          <p style={{ color: "var(--t2)", fontSize: 15, maxWidth: 640, margin: 0, lineHeight: 1.6 }}>
+            Approved claims remain linked to verified facts. Changing an upstream fact in the
+            Registry flags every downstream post in real time.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           {staleCount > 0 && (
             <button
               type="button"
               onClick={handleSyncAll}
-              className="btn btn-primary"
+              className="pill red"
+              style={{ height: 38, fontSize: 13, cursor: "pointer" }}
             >
-              ⚡ Sync All ({staleCount}) Stale Posts
+              Sync all ({staleCount}) stale posts
             </button>
           )}
 
           <button
             type="button"
             onClick={handleReset}
-            className="btn text-xs text-[#a1a1aa] hover:text-white"
+            className="pill ghost"
+            style={{ height: 38, fontSize: 13, cursor: "pointer" }}
             title="Reset to default demo data"
           >
-            Reset Demo Data
+            Reset demo data
           </button>
         </div>
       </header>
 
-      {/* ─── Feedback Toast / Alert ─── */}
+      {/* ─── Feedback Alert Toast ─── */}
       {feedback && (
         <div
           role="status"
-          className="p-3.5 rounded-xl border border-[#10b981]/40 bg-[#10b981]/10 text-sm text-white flex items-center justify-between"
+          style={{
+            padding: "14px 18px",
+            borderRadius: 14,
+            border: "1px solid #10b981",
+            background: "rgba(16, 185, 129, 0.08)",
+            color: "var(--t1)",
+            fontSize: 14,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+          }}
         >
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#10b981]" />
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: "#10b981",
+                flexShrink: 0,
+              }}
+            />
             <span>{feedback}</span>
           </div>
           <button
             type="button"
             onClick={() => setFeedback(null)}
-            className="text-xs text-[#10b981] hover:underline"
+            style={{
+              background: "none",
+              border: "none",
+              color: "#10b981",
+              fontSize: 12,
+              cursor: "pointer",
+              fontFamily: "var(--mono)",
+            }}
           >
             Dismiss
           </button>
@@ -107,124 +154,247 @@ export default function LedgerPage() {
       {staleCount > 0 ? (
         <div
           role="alert"
-          className="panel p-5 border border-[#ef4444]/40 bg-[#ef4444]/10 rounded-xl flex flex-wrap items-center justify-between gap-4"
-          style={{ boxShadow: "0 0 24px rgba(239,68,68,0.18)" }}
+          style={{
+            background: "var(--s1)",
+            border: "1px solid var(--redhi)",
+            borderRadius: 18,
+            padding: "20px 24px",
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+          }}
         >
           <div>
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444] animate-pulse" />
-              <p className="font-bold text-[#ef4444]">
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: "var(--redhi)",
+                  flexShrink: 0,
+                }}
+              />
+              <p style={{ margin: 0, fontWeight: 500, fontSize: 16, color: "var(--t1)" }}>
                 {staleCount} approved post{staleCount === 1 ? " contains" : "s contain"} outdated pricing facts
               </p>
             </div>
-            <p className="text-xs text-[#a1a1aa] mt-1">
-              An upstream Fact changed. Review individual posts or click &ldquo;Sync All&rdquo; to propagate updates.
+            <p style={{ margin: "6px 0 0", fontSize: 13, color: "var(--t2)" }}>
+              An upstream Fact changed. Review individual posts below or synchronize all at once.
             </p>
           </div>
 
           <button
             type="button"
             onClick={handleSyncAll}
-            className="btn text-xs px-4 py-1.5 h-auto font-bold border-[#ef4444]/40 bg-[#ef4444]/20 text-white hover:bg-[#ef4444]/30"
+            className="pill red"
+            style={{ height: 38, fontSize: 13, cursor: "pointer" }}
           >
-            Auto-Sync All {staleCount} Posts →
+            Auto-sync all {staleCount} posts →
           </button>
         </div>
       ) : unverifiedCount > 0 ? (
-        <div className="panel p-5 border border-[#ff6b00]/30 bg-[#ff6b00]/5 rounded-xl">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#ff6b00]" />
-            <p className="font-bold text-[#ff6b00]">
+        <div
+          style={{
+            background: "var(--s1)",
+            border: "1px solid var(--line)",
+            borderRadius: 18,
+            padding: "20px 24px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: "var(--orange)",
+                flexShrink: 0,
+              }}
+            />
+            <p style={{ margin: 0, fontWeight: 500, fontSize: 15, color: "var(--t1)" }}>
               {unverifiedCount} approved post{unverifiedCount === 1 ? " has" : "s have"} no linked supporting fact
             </p>
           </div>
-          <p className="text-xs text-[#a1a1aa] mt-1">
-            These posts have been approved by a reviewer but are not synchronized with a verified Ledger fact.
+          <p style={{ margin: "6px 0 0", fontSize: 13, color: "var(--t2)" }}>
+            These posts were reviewed manually without being bound to an automated registry fact token.
           </p>
         </div>
       ) : (
-        <div className="panel p-4 text-sm text-[#a1a1aa] flex items-center justify-between border border-[#10b981]/30 bg-[#10b981]/5 rounded-xl">
-          <div className="flex items-center gap-3">
-            <span className="w-2 h-2 rounded-full bg-[#10b981] shadow-[0_0_8px_#10b981]" />
-            <span>
-              All approved posts are linked to existing facts and synchronized with the latest approved values.
+        <div
+          style={{
+            background: "var(--s1)",
+            border: "1px solid var(--line)",
+            borderRadius: 18,
+            padding: "18px 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: "#10b981",
+                flexShrink: 0,
+              }}
+            />
+            <span style={{ fontSize: 14, color: "var(--t2)" }}>
+              All approved posts are linked to verified facts and synchronized with the latest approved values.
             </span>
           </div>
-          <Link href="/admin" className="text-xs text-[#ff6b00] hover:underline font-semibold font-mono">
-            Edit Facts in Registry →
+          <Link
+            href="/admin"
+            className="pill ghost"
+            style={{ height: 34, fontSize: 12, padding: "0 14px", fontFamily: "var(--mono)" }}
+          >
+            Edit facts in registry →
           </Link>
         </div>
       )}
 
-      {/* ─── Filter Status Tabs ─── */}
-      <div className="flex items-center gap-2 border-b border-[#ff6b00]/15 pb-2 flex-wrap">
+      {/* ─── Filter Status Tabs (Matching Home page WhatTabs) ─── */}
+      <div
+        className="tabs"
+        role="tablist"
+        aria-label="Filter posts by ledger status"
+        style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
+      >
         <button
           type="button"
+          role="tab"
+          aria-selected={filter === "all"}
           onClick={() => setFilter("all")}
-          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-            filter === "all"
-              ? "bg-[#ff6b00] text-black shadow-[0_0_12px_rgba(255,107,0,0.3)]"
-              : "text-[#a1a1aa] hover:text-white bg-black/40 border border-white/5"
-          }`}
+          className="tab"
+          style={{
+            fontFamily: "var(--mono)",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+          }}
         >
-          <span>All Posts</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/30">
+          <span>All posts</span>
+          <span
+            style={{
+              padding: "1px 6px",
+              borderRadius: 999,
+              fontSize: 11,
+              background: filter === "all" ? "rgba(255,255,255,0.2)" : "rgba(255,226,220,0.06)",
+            }}
+          >
             {posts.length}
           </span>
         </button>
 
         <button
           type="button"
+          role="tab"
+          aria-selected={filter === "stale"}
           onClick={() => setFilter("stale")}
-          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-            filter === "stale"
-              ? "bg-[#ef4444] text-white shadow-[0_0_12px_rgba(239,68,68,0.3)]"
-              : "text-[#a1a1aa] hover:text-white bg-black/40 border border-white/5"
-          }`}
+          className="tab"
+          style={{
+            fontFamily: "var(--mono)",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+          }}
         >
-          <span>Stale Drift</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/30">
+          <span>Stale drift</span>
+          <span
+            style={{
+              padding: "1px 6px",
+              borderRadius: 999,
+              fontSize: 11,
+              background: filter === "stale" ? "rgba(255,255,255,0.2)" : "rgba(245, 184, 46, 0.15)",
+              color: filter === "stale" ? "#fff" : "var(--yellow)",
+            }}
+          >
             {staleCount}
           </span>
         </button>
 
         <button
           type="button"
+          role="tab"
+          aria-selected={filter === "current"}
           onClick={() => setFilter("current")}
-          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-            filter === "current"
-              ? "bg-[#10b981] text-black shadow-[0_0_12px_rgba(16,185,129,0.3)]"
-              : "text-[#a1a1aa] hover:text-white bg-black/40 border border-white/5"
-          }`}
+          className="tab"
+          style={{
+            fontFamily: "var(--mono)",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+          }}
         >
-          <span>Current & Synced</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/30">
+          <span>Current & synced</span>
+          <span
+            style={{
+              padding: "1px 6px",
+              borderRadius: 999,
+              fontSize: 11,
+              background: filter === "current" ? "rgba(255,255,255,0.2)" : "rgba(16, 185, 129, 0.15)",
+              color: filter === "current" ? "#fff" : "#10b981",
+            }}
+          >
             {currentCount}
           </span>
         </button>
 
         <button
           type="button"
+          role="tab"
+          aria-selected={filter === "unverified"}
           onClick={() => setFilter("unverified")}
-          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-            filter === "unverified"
-              ? "bg-[#ff9500] text-black shadow-[0_0_12px_rgba(255,149,0,0.3)]"
-              : "text-[#a1a1aa] hover:text-white bg-black/40 border border-white/5"
-          }`}
+          className="tab"
+          style={{
+            fontFamily: "var(--mono)",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+          }}
         >
           <span>Unverified</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/30">
+          <span
+            style={{
+              padding: "1px 6px",
+              borderRadius: 999,
+              fontSize: 11,
+              background: filter === "unverified" ? "rgba(255,255,255,0.2)" : "rgba(236, 122, 28, 0.15)",
+              color: filter === "unverified" ? "#fff" : "var(--orange)",
+            }}
+          >
             {unverifiedCount}
           </span>
         </button>
       </div>
 
       {/* ─── Post Cards List ─── */}
-      <div className="flex flex-col gap-4">
+      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         {filteredPosts.length === 0 ? (
-          <div className="panel p-10 text-center text-[#a1a1aa] flex flex-col items-center gap-3">
-            <p className="font-semibold text-white">No posts matching &ldquo;{filter}&rdquo; filter</p>
-            <p className="text-xs text-[#71717a] max-w-sm">
+          <div
+            style={{
+              background: "var(--s1)",
+              border: "1px solid var(--line)",
+              borderRadius: 24,
+              padding: "48px 24px",
+              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <p style={{ fontWeight: 500, fontSize: 18, color: "var(--t1)", margin: 0 }}>
+              No posts matching &ldquo;{filter}&rdquo; filter
+            </p>
+            <p style={{ fontSize: 14, color: "var(--t3)", maxWidth: 420, margin: 0, lineHeight: 1.6 }}>
               {filter === "stale"
                 ? "No posts are currently stale. You can edit fact prices in the Fact Registry to simulate upstream drift."
                 : "Analyze and approve drafts from the Analyze studio to add verified posts to this ledger."}
@@ -233,9 +403,10 @@ export default function LedgerPage() {
               <button
                 type="button"
                 onClick={() => setFilter("all")}
-                className="btn text-xs px-3 py-1.5 h-auto text-[#ff6b00]"
+                className="pill ghost"
+                style={{ height: 36, fontSize: 13, marginTop: 8 }}
               >
-                Show All Posts
+                Show all posts
               </button>
             )}
           </div>
@@ -245,46 +416,46 @@ export default function LedgerPage() {
             const fact = facts.find((f) => f.id === p.fact_id);
             const unverified = !p.fact_id || !fact;
 
-            const status = stale
-              ? "Stale Drift"
-              : unverified
-                ? "Unverified"
-                : "Current";
-
-            const statusClass = stale
-              ? "bg-[#ef4444]/15 border-[#ef4444]/40 text-[#ef4444]"
-              : unverified
-                ? "bg-[#ff6b00]/15 border-[#ff6b00]/40 text-[#ff6b00]"
-                : "bg-[#10b981]/15 border-[#10b981]/40 text-[#10b981]";
-
             return (
               <section
                 key={p.id}
-                className={`panel p-6 flex flex-col gap-4 transition-all duration-200 border ${
-                  stale
-                    ? "border-[#ef4444]/40 shadow-[0_8px_30px_rgba(239,68,68,0.1)]"
-                    : unverified
-                      ? "border-[#ff6b00]/30"
-                      : "border-[#ff6b00]/15 hover:border-[#ff6b00]/35 hover:shadow-[0_8px_30px_rgba(0,0,0,0.45)]"
-                }`}
+                className="mc"
+                style={{
+                  background: "var(--s1)",
+                  border: `1px solid ${stale ? "var(--redhi)" : "var(--line)"}`,
+                  borderRadius: 24,
+                  padding: 28,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 18,
+                  transition: "border-color 0.25s var(--ease), transform 0.25s var(--ease)",
+                }}
               >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <h2 className="font-semibold text-base text-white">
+                {/* Header: Title, status chip, source */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 16,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <h2 style={{ fontSize: 19, fontWeight: 500, margin: 0, color: "var(--t1)" }}>
                       {p.title}
                     </h2>
 
-                    <span
-                      className={`text-xs px-2.5 py-0.5 rounded-full font-semibold border ${statusClass}`}
-                    >
-                      {status}
-                    </span>
+                    <div className="chip">
+                      <span className={`d ${stale ? "y" : unverified ? "o" : ""}`} style={{ background: !stale && !unverified ? "#10b981" : undefined }} />
+                      {stale ? "1 post stale" : unverified ? "Unverified" : "Current"}
+                    </div>
                   </div>
 
                   {fact && (
-                    <span className="text-xs font-mono text-[#a1a1aa]">
+                    <span style={{ fontSize: 12, fontFamily: "var(--mono)", color: "var(--t3)" }}>
                       Linked Source:{" "}
-                      <strong className="text-[#ff6b00]">
+                      <strong style={{ color: "var(--redhi)", fontWeight: 500 }}>
                         {fact.label}
                       </strong>{" "}
                       (${fact.value} · v{fact.version})
@@ -292,48 +463,107 @@ export default function LedgerPage() {
                   )}
                 </div>
 
-                <div className="p-4 rounded-xl bg-black/40 border border-white/5 text-sm text-white leading-relaxed">
+                {/* Post body */}
+                <div
+                  style={{
+                    background: "var(--s2)",
+                    border: "1px solid var(--line)",
+                    borderRadius: 16,
+                    padding: 20,
+                    fontSize: 15,
+                    lineHeight: 1.7,
+                    color: "var(--t1)",
+                  }}
+                >
                   {p.text}
                 </div>
 
-                {unverified && (
-                  <div className="p-3 rounded-lg bg-[#ff6b00]/5 border border-[#ff6b00]/20 text-xs text-[#ff9500]">
-                    Reviewer approved this post, but it has no valid linked
-                    supporting fact in the registry.
-                  </div>
-                )}
-
+                {/* Stale Fact Visual Box (Matching Card 3 on Home Page) */}
                 {stale && fact && (
-                  <div className="p-3.5 rounded-lg bg-[#ff9500]/10 border border-[#ff9500]/30 flex flex-wrap items-center justify-between gap-3">
-                    <div className="text-sm">
-                      <span className="text-[#a1a1aa] font-medium">
-                        Registry price changed:{" "}
+                  <div
+                    style={{
+                      background: "var(--s2)",
+                      border: "1px solid var(--line)",
+                      borderRadius: 16,
+                      padding: 20,
+                      display: "flex",
+                      flexWrap: "wrap",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 16,
+                    }}
+                  >
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      <span className="m" style={{ color: "var(--t3)" }}>
+                        Starter price · Registry fact changed
                       </span>
-
-                      <s className="text-[#71717a] font-mono mr-2">
-                        {p.token}
-                      </s>
-
-                      <span className="text-[#a1a1aa]">→</span>
-
-                      <b className="text-[#ff9500] font-mono ml-2 text-base">
-                        ${fact.value}
-                      </b>
+                      <div
+                        className="price"
+                        style={{
+                          fontSize: 28,
+                          fontFamily: "var(--mono)",
+                          lineHeight: 1.2,
+                          fontVariantNumeric: "tabular-nums",
+                        }}
+                      >
+                        <span className="old" style={{ position: "relative", color: "var(--t3)" }}>
+                          <s>{p.token}</s>
+                        </span>{" "}
+                        <span style={{ color: "var(--t2)", margin: "0 6px" }}>→</span>{" "}
+                        <span className="new" style={{ color: "var(--yellow)", opacity: 1 }}>
+                          ${fact.value}
+                        </span>
+                      </div>
                     </div>
 
                     <button
                       type="button"
-                      className="btn btn-primary text-xs px-4 py-1.5 h-auto font-bold"
+                      className="pill red"
+                      style={{ height: 38, fontSize: 13, cursor: "pointer" }}
                       onClick={() => fixPost(p.id)}
                     >
-                      Update to ${fact.value} &amp; Sync Post
+                      Update to ${fact.value} &amp; sync post
                     </button>
                   </div>
                 )}
 
-                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#71717a] font-mono border-t border-white/5 pt-3">
+                {/* Unverified Warning note */}
+                {unverified && (
+                  <div
+                    style={{
+                      background: "var(--s2)",
+                      border: "1px solid var(--line)",
+                      borderRadius: 12,
+                      padding: "12px 16px",
+                      fontSize: 13,
+                      color: "var(--t2)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <span className="d o" />
+                    Reviewer approved this post, but it has no valid linked supporting fact in the registry.
+                  </div>
+                )}
+
+                {/* Card footer audit meta */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 16,
+                    fontSize: 12,
+                    fontFamily: "var(--mono)",
+                    color: "var(--t3)",
+                    borderTop: "1px solid var(--line)",
+                    paddingTop: 12,
+                    flexWrap: "wrap",
+                  }}
+                >
                   <span>Post ID: {p.id}</span>
-                  <span>Living Audit: Synchronized with browser memory</span>
+                  <span>Living audit: Synchronized with browser memory</span>
                 </div>
               </section>
             );

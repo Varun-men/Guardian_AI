@@ -1,25 +1,5 @@
 import type { Issue } from "@/lib/types";
 
-const C = {
-  neon: "#ff6b00",
-  yellow: "#ff9500",
-  text: "#ffffff",
-  text2: "#a1a1aa",
-  muted: "#71717a",
-  surface: "#0c0c0e",
-  raised: "#17171a",
-  line: "rgba(255,107,0,.18)",
-  ok: "#10b981",
-  high: "#ef4444",
-  medium: "#ff6b00",
-  a11y: "#b97aff",
-};
-
-const BG = {
-  card: "rgba(255,107,0,.025)",
-  raised: "rgba(255,107,0,.06)",
-};
-
 const LABEL: Record<Issue["severity"], string> = {
   HIGH: "High Risk",
   MEDIUM: "Medium Risk",
@@ -27,16 +7,23 @@ const LABEL: Record<Issue["severity"], string> = {
   ACCESSIBILITY: "Accessibility",
 };
 
-const TONE_COLOR: Record<Issue["severity"], string> = {
-  HIGH: C.high,
-  MEDIUM: C.medium,
-  SUPPORTED: C.ok,
-  ACCESSIBILITY: C.a11y,
-};
+function getSeverityColor(sev: Issue["severity"]) {
+  switch (sev) {
+    case "HIGH":
+      return "var(--redhi)";
+    case "MEDIUM":
+      return "var(--orange)";
+    case "ACCESSIBILITY":
+      return "var(--yellow)";
+    case "SUPPORTED":
+    default:
+      return "#10b981";
+  }
+}
 
 function IconRule() {
   return (
-    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
       <path d="M13 2L4.09 12.26a1 1 0 00.82 1.57H11L10.08 22 20 11.74a1 1 0 00-.83-1.57L14 10.13 13 2z" />
     </svg>
   );
@@ -45,8 +32,8 @@ function IconRule() {
 function IconAI() {
   return (
     <svg
-      width="10"
-      height="10"
+      width="11"
+      height="11"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -60,8 +47,8 @@ function IconAI() {
 function IconLink() {
   return (
     <svg
-      width="10"
-      height="10"
+      width="11"
+      height="11"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -77,8 +64,8 @@ function IconLink() {
 function IconUser() {
   return (
     <svg
-      width="10"
-      height="10"
+      width="11"
+      height="11"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -122,136 +109,111 @@ export default function IssueCard({
   onApply: () => void;
   onDismiss: () => void;
 }) {
-  const toneColor = TONE_COLOR[issue.severity];
+  const toneColor = getSeverityColor(issue.severity);
 
   const pct = Number.isFinite(issue.confidence)
-  ? Math.round(Math.max(0, Math.min(1, issue.confidence)) * 100)
-  : 0;
+    ? Math.round(Math.max(0, Math.min(1, issue.confidence)) * 100)
+    : 0;
 
-  const pctColor =
-    pct > 90 ? C.ok : pct > 70 ? C.neon : C.medium;
+  const pctColor = pct > 90 ? "#10b981" : pct > 70 ? "var(--yellow)" : "var(--orange)";
 
   return (
     <>
       <style>{`
         .ic-wrap {
-          position:relative;
-          border-radius:16px;
-          cursor:pointer;
-          overflow:hidden;
-          transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
-        }
-
-        .ic-wrap::before {
-          content:'';
-          position:absolute;
-          inset:0;
-          border-radius:16px;
-          background:linear-gradient(135deg, rgba(255,107,0,.06) 0%, transparent 60%);
-          opacity:0;
-          transition:opacity .25s;
-          pointer-events:none;
-          z-index:0;
+          position: relative;
+          background: var(--s1);
+          border: 1px solid var(--line);
+          border-radius: 20px;
+          cursor: pointer;
+          overflow: hidden;
+          transition: transform 0.25s var(--ease), border-color 0.25s var(--ease);
         }
 
         .ic-wrap:hover {
-          transform:translateY(-3px);
-          box-shadow:0 16px 48px rgba(0,0,0,.65), 0 0 0 1px rgba(255,107,0,.25);
-        }
-
-        .ic-wrap:hover::before {
-          opacity:1;
-        }
-
-        .ic-wrap:hover .ic-inner {
-          background:rgba(255,107,0,.045);
+          border-color: rgba(242, 103, 95, 0.55);
+          transform: translateY(-3px);
         }
 
         .ic-wrap.ic-active {
-          box-shadow:0 0 0 1.5px ${C.neon}, 0 8px 32px rgba(255,107,0,.2);
-        }
-
-        .ic-sev-bar {
-          position:absolute;
-          left:0;
-          top:0;
-          bottom:0;
-          width:3px;
-          border-radius:16px 0 0 16px;
+          border-color: var(--redhi);
         }
 
         .ic-apply-btn {
-          display:inline-flex;
-          align-items:center;
-          gap:7px;
-          padding:9px 18px;
-          border-radius:9px;
-          font-size:12.5px;
-          font-weight:700;
-          border:none;
-          color:#fff;
-          cursor:pointer;
-          background:linear-gradient(135deg,#d44a00,${C.neon});
-          box-shadow:0 0 16px rgba(255,107,0,.4);
-          transition:all .2s ease;
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          height: 38px;
+          padding: 0 18px;
+          border-radius: 999px;
+          font-size: 13px;
+          font-weight: 500;
+          border: 1px solid var(--blood);
+          color: #fff;
+          cursor: pointer;
+          background: var(--blood);
+          transition: background-color 0.15s var(--ease), transform 0.1s var(--ease);
         }
 
         .ic-apply-btn:hover {
-          filter:brightness(1.12);
-          transform:translateY(-1px);
-          box-shadow:0 0 24px rgba(255,107,0,.6);
+          background: var(--blood-hover);
+        }
+
+        .ic-apply-btn:active {
+          transform: scale(0.98);
         }
 
         .ic-dismiss-btn {
-          display:inline-flex;
-          align-items:center;
-          gap:7px;
-          padding:9px 16px;
-          border-radius:9px;
-          font-size:12.5px;
-          font-weight:600;
-          cursor:pointer;
-          color:${C.text2};
-          background:rgba(255,255,255,.05);
-          border:1px solid rgba(255,255,255,.12);
-          transition:all .2s ease;
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          height: 38px;
+          padding: 0 16px;
+          border-radius: 999px;
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+          color: var(--t2);
+          background: transparent;
+          border: 1px solid var(--line);
+          transition: background-color 0.15s var(--ease), color 0.15s var(--ease), border-color 0.15s var(--ease);
         }
 
         .ic-dismiss-btn:hover {
-          background:rgba(255,255,255,.1);
-          color:${C.text};
-          border-color:rgba(255,255,255,.25);
+          background: rgba(255, 226, 220, 0.06);
+          color: var(--t1);
+          border-color: var(--t3);
         }
 
         .ic-confidence-track {
-          width:52px;
-          height:5px;
-          border-radius:999px;
-          background:rgba(255,255,255,.1);
-          overflow:hidden;
+          width: 52px;
+          height: 5px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.08);
+          overflow: hidden;
         }
 
         .ic-confidence-fill {
-          height:100%;
-          border-radius:999px;
-          transition:width .7s cubic-bezier(0.16,1,0.3,1);
+          height: 100%;
+          border-radius: 999px;
+          transition: width 0.6s var(--ease);
         }
 
         .ic-evidence {
-          border-left:2px solid ${C.neon};
-          padding:10px 14px;
-          background:rgba(255,107,0,.06);
-          border-radius:0 8px 8px 0;
+          border-left: 2px solid var(--redhi);
+          padding: 12px 14px;
+          background: var(--s2);
+          border-radius: 0 12px 12px 0;
         }
 
         .ic-fix-box {
-          display:flex;
-          gap:10px;
-          align-items:flex-start;
-          padding:11px 14px;
-          border-radius:10px;
-          background:rgba(255,149,0,.08);
-          border-left:2px solid ${C.yellow};
+          display: flex;
+          gap: 10px;
+          align-items: flex-start;
+          padding: 12px 14px;
+          border-radius: 12px;
+          background: var(--s2);
+          border-left: 2px solid var(--yellow);
         }
       `}</style>
 
@@ -259,29 +221,28 @@ export default function IssueCard({
         className={`ic-wrap ${active ? "ic-active" : ""}`}
         onClick={onSelect}
         style={{
-          border: `1px solid ${active ? C.neon : C.line}`,
           opacity: resolved ? 0.6 : 1,
         }}
       >
-        {/* Severity bar */}
+        {/* Severity indicator line */}
         <div
-          className="ic-sev-bar"
-          style={{ background: toneColor, opacity: 0.7 }}
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 3,
+            background: toneColor,
+          }}
         />
 
         {/* Inner card */}
         <div
-          className="ic-inner"
           style={{
-            borderRadius: 16,
-            padding: "16px 18px 18px 22px",
+            padding: "20px 22px 22px 24px",
             display: "flex",
             flexDirection: "column",
-            gap: 13,
-            background: BG.card,
-            transition: "background .25s",
-            position: "relative",
-            zIndex: 1,
+            gap: 14,
           }}
         >
           {/* Header */}
@@ -290,28 +251,28 @@ export default function IssueCard({
               display: "flex",
               flexWrap: "wrap",
               alignItems: "center",
-              gap: 7,
+              gap: 8,
             }}
           >
-            {/* Severity */}
+            {/* Severity Pill */}
             <span
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: 6,
-                padding: "3px 10px",
-                borderRadius: 6,
-                fontSize: 11.5,
-                fontWeight: 700,
-                color: toneColor,
-                border: `1px solid ${toneColor}40`,
-                background: `${toneColor}12`,
+                gap: 7,
+                padding: "4px 12px",
+                borderRadius: 999,
+                fontSize: 12,
+                fontWeight: 500,
+                color: "var(--t1)",
+                border: "1px solid var(--line)",
+                background: "rgba(244, 236, 230, 0.06)",
               }}
             >
               <span
                 style={{
-                  width: 6,
-                  height: 6,
+                  width: 7,
+                  height: 7,
                   borderRadius: "50%",
                   background: toneColor,
                   flexShrink: 0,
@@ -326,17 +287,18 @@ export default function IssueCard({
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 5,
-                padding: "3px 9px",
-                borderRadius: 6,
-                fontSize: 11,
-                fontWeight: 600,
-                color: C.neon,
-                border: `1px solid ${C.neon}30`,
-                background: `${C.neon}0d`,
+                padding: "4px 11px",
+                borderRadius: 999,
+                fontSize: 12,
+                fontWeight: 500,
+                color: "var(--t2)",
+                border: "1px solid var(--line)",
+                background: "rgba(244, 236, 230, 0.04)",
+                fontFamily: "var(--mono)",
               }}
             >
               {issue.check_type === "RULE" ? <IconRule /> : <IconAI />}
-              {issue.check_type === "RULE" ? "Rule" : "AI"}
+              {issue.check_type === "RULE" ? "Rule" : "AI Citation"}
             </span>
 
             {/* Ledger badge */}
@@ -346,17 +308,18 @@ export default function IssueCard({
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 5,
-                  padding: "3px 9px",
-                  borderRadius: 6,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: C.ok,
-                  border: `1px solid ${C.ok}30`,
-                  background: `${C.ok}0d`,
+                  padding: "4px 11px",
+                  borderRadius: 999,
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: "#10b981",
+                  border: "1px solid var(--line)",
+                  background: "rgba(16, 185, 129, 0.08)",
+                  fontFamily: "var(--mono)",
                 }}
               >
                 <IconLink />
-                Ledger
+                Ledger Linked
               </span>
             )}
 
@@ -367,17 +330,17 @@ export default function IssueCard({
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 5,
-                  padding: "3px 9px",
-                  borderRadius: 6,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: C.yellow,
-                  border: `1px solid ${C.yellow}40`,
-                  background: `${C.yellow}0d`,
+                  padding: "4px 11px",
+                  borderRadius: 999,
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: "var(--yellow)",
+                  border: "1px solid var(--line)",
+                  background: "rgba(245, 184, 46, 0.08)",
                 }}
               >
                 <IconUser />
-                Decision required
+                Human Review
               </span>
             )}
 
@@ -387,7 +350,7 @@ export default function IssueCard({
                 marginLeft: "auto",
                 display: "flex",
                 alignItems: "center",
-                gap: 9,
+                gap: 8,
               }}
             >
               <div className="ic-confidence-track">
@@ -402,11 +365,12 @@ export default function IssueCard({
 
               <span
                 style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: C.muted,
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: "var(--t3)",
+                  fontFamily: "var(--mono)",
                   fontVariantNumeric: "tabular-nums",
-                  minWidth: 30,
+                  minWidth: 32,
                   textAlign: "right",
                 }}
               >
@@ -415,26 +379,38 @@ export default function IssueCard({
             </div>
           </div>
 
-          {/* Flagged text */}
-          <p
+          {/* Flagged text with highlight styled like Home Page Card 2 */}
+          <div
             style={{
-              margin: 0,
-              fontSize: 14.5,
-              fontWeight: 700,
-              color: C.text,
-              lineHeight: 1.5,
+              padding: "12px 14px",
+              background: "var(--s2)",
+              borderRadius: 12,
+              fontSize: 15,
+              lineHeight: 1.6,
+              color: "var(--t1)",
             }}
           >
-            &ldquo;{issue.flagged_text}&rdquo;
-          </p>
+            Claim:{" "}
+            <mark
+              style={{
+                color: "inherit",
+                padding: "2px 4px",
+                borderBottom: "2px solid var(--redhi)",
+                background: "rgba(242, 109, 99, 0.22)",
+                borderRadius: 2,
+              }}
+            >
+              &ldquo;{issue.flagged_text}&rdquo;
+            </mark>
+          </div>
 
           {/* Explanation */}
           <p
             style={{
               margin: 0,
-              fontSize: 13.5,
-              color: C.text2,
-              lineHeight: 1.65,
+              fontSize: 14,
+              color: "var(--t2)",
+              lineHeight: 1.6,
             }}
           >
             {issue.explanation}
@@ -445,24 +421,23 @@ export default function IssueCard({
             <p
               style={{
                 margin: 0,
-                fontSize: 13,
-                fontStyle: "italic",
-                color: C.text2,
+                fontSize: 13.5,
+                color: "var(--t1)",
                 lineHeight: 1.6,
               }}
             >
-              {issue.cited_evidence}
+              &ldquo;{issue.cited_evidence}&rdquo;
             </p>
 
             <p
               style={{
-                margin: "6px 0 0",
-                fontSize: 11,
-                color: C.muted,
-                fontFamily: "ui-monospace,monospace",
+                margin: "8px 0 0",
+                fontSize: 11.5,
+                color: "var(--t3)",
+                fontFamily: "var(--mono)",
               }}
             >
-              {issue.passage_id} · {issue.source_version}
+              Source: {issue.passage_id} · v{issue.source_version}
             </p>
           </div>
 
@@ -471,7 +446,7 @@ export default function IssueCard({
             <div className="ic-fix-box">
               <span
                 style={{
-                  color: C.yellow,
+                  color: "var(--yellow)",
                   flexShrink: 0,
                   marginTop: 2,
                 }}
@@ -479,12 +454,11 @@ export default function IssueCard({
                 <IconWand />
               </span>
 
-              <span style={{ fontSize: 13, lineHeight: 1.5 }}>
-                <span style={{ color: C.muted }}>
-                  Suggested:{" "}
+              <span style={{ fontSize: 13.5, lineHeight: 1.5 }}>
+                <span style={{ color: "var(--t3)", fontFamily: "var(--mono)" }}>
+                  Suggested revision:{" "}
                 </span>
-
-                <span style={{ color: C.text }}>
+                <span style={{ color: "var(--t1)", fontWeight: 500 }}>
                   {issue.suggested_fix}
                 </span>
               </span>
@@ -498,6 +472,7 @@ export default function IssueCard({
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
+                paddingTop: 4,
               }}
             >
               {resolved === "applied" ? (
@@ -507,18 +482,17 @@ export default function IssueCard({
                     height="14"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke={C.ok}
+                    stroke="#10b981"
                     strokeWidth="2.5"
                     strokeLinecap="round"
                   >
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
-
                   <span
                     style={{
-                      fontSize: 12.5,
-                      fontWeight: 700,
-                      color: C.ok,
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: "#10b981",
                     }}
                   >
                     Fix applied to draft
@@ -531,19 +505,18 @@ export default function IssueCard({
                     height="14"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke={C.muted}
+                    stroke="var(--t3)"
                     strokeWidth="2.5"
                     strokeLinecap="round"
                   >
                     <line x1="18" y1="6" x2="6" y2="18" />
                     <line x1="6" y1="6" x2="18" y2="18" />
                   </svg>
-
                   <span
                     style={{
-                      fontSize: 12.5,
-                      fontWeight: 700,
-                      color: C.muted,
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: "var(--t3)",
                     }}
                   >
                     Dismissed by reviewer
@@ -553,10 +526,9 @@ export default function IssueCard({
             </div>
           ) : issue.suggested_fix || issue.needs_human_decision ? (
             <div
-              style={{ display: "flex", gap: 9, flexWrap: "wrap" }}
+              style={{ display: "flex", gap: 10, flexWrap: "wrap", paddingTop: 4 }}
               onClick={(event) => event.stopPropagation()}
             >
-              {/* Apply fix only when one exists */}
               {issue.suggested_fix && (
                 <button
                   type="button"
@@ -574,12 +546,10 @@ export default function IssueCard({
                   >
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
-
                   Apply fix
                 </button>
               )}
 
-              {/* Human review / dismissal */}
               <button
                 type="button"
                 className="ic-dismiss-btn"
