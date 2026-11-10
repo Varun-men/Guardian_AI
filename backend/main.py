@@ -16,6 +16,7 @@ from backend.api.sources import router as sources_router
 from backend.db.database import engine, get_db
 from backend.rules.integration import run_rule_checks
 from backend.api.reviews import router as reviews_router
+from backend.api.monitoring import router as monitoring_router
 
 
 # ============================================================
@@ -44,6 +45,7 @@ app = FastAPI(
 app.include_router(auth_router)
 app.include_router(facts_router)
 app.include_router(sources_router)
+app.include_router(monitoring_router)
 
 
 # ============================================================
