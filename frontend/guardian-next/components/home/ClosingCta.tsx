@@ -5,13 +5,13 @@ export function ClosingCta() {
   return (
     <section className="cta">
       <svg viewBox="0 0 1100 700" aria-hidden="true" fill="none">
-        <g stroke="#b0121b" strokeOpacity=".55" strokeWidth="1.5">
-          <circle cx="550" cy="350" r="340" />
-          <circle cx="550" cy="350" r="260" />
-          <circle cx="550" cy="350" r="180" />
+        <g className="cta-rings" stroke="#b0121b" strokeOpacity=".55" strokeWidth="1.5">
+          <circle className="cta-ring c1" cx="550" cy="350" r="340" />
+          <circle className="cta-ring c2" cx="550" cy="350" r="260" />
+          <circle className="cta-ring c3" cx="550" cy="350" r="180" />
         </g>
-        <circle cx="880" cy="160" r="18" fill="#f7ece8" />
-        <circle cx="210" cy="520" r="12" fill="#f2675f" />
+        <circle className="cta-dot d1" cx="880" cy="160" r="18" fill="#f7ece8" />
+        <circle className="cta-dot d2" cx="210" cy="520" r="12" fill="#f2675f" />
       </svg>
       <Reveal className="wrap">
         <h2>A human always decides</h2>

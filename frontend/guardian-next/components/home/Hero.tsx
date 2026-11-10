@@ -6,15 +6,15 @@ export function Hero() {
     <header className="hero">
       <svg className="motif" viewBox="0 0 800 800" aria-hidden="true" fill="none">
         <g stroke="#b0121b" strokeOpacity=".6" strokeWidth="1.5">
-          <circle cx="400" cy="400" r="380" />
-          <circle cx="400" cy="400" r="300" />
-          <circle cx="400" cy="400" r="220" />
-          <circle cx="400" cy="400" r="140" />
+          <circle className="motif-ring r1" cx="400" cy="400" r="380" />
+          <circle className="motif-ring r2" cx="400" cy="400" r="300" />
+          <circle className="motif-ring r3" cx="400" cy="400" r="220" />
+          <circle className="motif-ring r4" cx="400" cy="400" r="140" />
         </g>
-        <circle cx="400" cy="400" r="72" fill="#b0121b" />
-        <circle cx="660" cy="250" r="22" fill="#f7ece8" />
-        <circle cx="196" cy="560" r="16" fill="#f2675f" />
-        <circle cx="520" cy="660" r="10" fill="#f7ece8" fillOpacity=".7" />
+        <circle className="motif-core" cx="400" cy="400" r="72" fill="#b0121b" />
+        <circle className="motif-dot d1" cx="660" cy="250" r="22" fill="#f7ece8" />
+        <circle className="motif-dot d2" cx="196" cy="560" r="16" fill="#f2675f" />
+        <circle className="motif-dot d3" cx="520" cy="660" r="10" fill="#f7ece8" fillOpacity=".7" />
       </svg>
       <div className="wrap hero-in" id="top" style={{ width: "100%" }}>
         <p className="kick">Living claim ledger</p>
