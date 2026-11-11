@@ -1,4 +1,4 @@
-﻿
+
 import logging
 import os
 import uuid
@@ -17,6 +17,8 @@ from backend.db.database import engine, get_db
 from backend.rules.integration import run_rule_checks
 from backend.api.reviews import router as reviews_router
 from backend.api.monitoring import router as monitoring_router
+from backend.api.findings import router as findings_router
+from backend.api.audit import router as audit_router
 
 
 # ============================================================
@@ -620,7 +622,6 @@ def database_check():
         }
 
     except Exception:
-
         logger.exception(
             "Database connectivity check failed"
         )
@@ -630,4 +631,8 @@ def database_check():
             detail="Database connection check failed.",
         )
 
+
+# Register remaining API routers
 app.include_router(reviews_router)
+app.include_router(findings_router)
+app.include_router(audit_router)
