@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import Link from "next/link";
 
 
@@ -66,7 +66,7 @@ export default function MenuPage() {
       color: "#ff9500",
       links: [
         {
-          href: "/#product",
+          href: "/#what",
           name: "System Capabilities",
           desc: "Pre-publish deterministic filter, citation verification gate, and living claim ledger.",
           badge: "Offerings",
@@ -97,8 +97,8 @@ export default function MenuPage() {
   return (
     <div className="min-h-screen bg-[#000000] text-[#ffffff] px-6 py-12 md:py-20 relative overflow-hidden">
       {/* Background radial glow */}
-      <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[#ff6b00]/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-[#ff9500]/8 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-0 right-1/4 max-w-full w-[600px] h-[600px] bg-[#ff6b00]/10 rounded-full blur-[140px] pointer-events-none overflow-hidden" />
+      <div className="absolute bottom-0 left-1/4 max-w-full w-[500px] h-[500px] bg-[#ff9500]/8 rounded-full blur-[140px] pointer-events-none overflow-hidden" />
 
       <div className="max-w-5xl mx-auto relative z-10 flex flex-col gap-12">
         {/* Top Header */}
@@ -208,7 +208,7 @@ export default function MenuPage() {
               href="/demo"
               className="btn btn-primary px-6 py-2.5 h-auto text-sm font-bold shadow-[0_0_20px_rgba(255,107,0,0.4)]"
             >
-              Explore Public Demo â†’
+              Explore Public Demo →
             </Link>
           </div>
         </div>

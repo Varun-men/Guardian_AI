@@ -51,9 +51,9 @@ export default function AdminPage() {
           return (
             <div
               key={f.id}
-              className="panel p-5 flex flex-wrap items-center justify-between gap-4 transition-all duration-200 hover:border-[#ff6b00]/30 hover:shadow-[0_8px_30px_rgba(0,0,0,0.45)]"
+              className="panel p-5 flex flex-wrap items-center justify-between gap-4 admin-fact-row transition-all duration-200 hover:border-[#ff6b00]/30 hover:shadow-[0_8px_30px_rgba(0,0,0,0.45)]"
             >
-              <div className="flex-1 min-w-[220px]">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3">
                   <h3 className="font-semibold text-base text-white">{f.label}</h3>
                   <span className="text-xs px-2 py-0.5 rounded-full border border-[#ff6b00]/30 bg-[#ff6b00]/10 text-[#ff6b00] font-mono">
@@ -71,7 +71,7 @@ export default function AdminPage() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 admin-fact-controls">
                 <label className="flex items-center gap-2.5 text-sm">
                   <span className="text-xs font-semibold uppercase tracking-wider text-[#a1a1aa]">Price ($)</span>
                   <input

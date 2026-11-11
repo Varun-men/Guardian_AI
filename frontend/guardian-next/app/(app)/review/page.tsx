@@ -96,12 +96,11 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
       issue.needs_human_decision && !resolved[issue.id]
   ).length;
 
-  // Restore previously saved decisions from the backend.
+  // Restore previously saved decisions from the backend (skipped for demo drafts).
   useEffect(() => {
-    if (isDemo) {
-      setDecisionsLoaded(true);
-      return;
-    }
+    // For demo drafts decisionsLoaded is already true from useState initializer;
+    // skip network fetch entirely.
+    if (isDemo) return;
 
     let cancelled = false;
 
@@ -476,6 +475,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
     window.addEventListener("keydown", handleKeyDown);
 
     return () => window.removeEventListener("keydown", handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, issues, content, resolved, saving]);
 
   // Highlight flagged text in the draft preview.

@@ -20,8 +20,8 @@ export default function AnalyticsPage() {
   return (
     <div className="flex flex-col gap-5 max-w-5xl">
       <header>
-        <h1 className="text-3xl display">Analytics</h1>
-        <p className="muted text-sm">Counts update as you analyse and review drafts in this session.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-white font-[family-name:var(--font-display)]">Analytics</h1>
+        <p className="text-sm mt-1" style={{ color: "var(--t3)" }}>Counts update as you analyse and review drafts in this session.</p>
       </header>
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Summary">
@@ -82,7 +82,7 @@ export default function AnalyticsPage() {
             </div>
           ))}
         </div>
-        <p className="muted text-xs">Values come from the team's eval scripts via lib/eval.ts.</p>
+        <p className="muted text-xs">Values come from the team&apos;s eval scripts via lib/eval.ts.</p>
       </section>
     </div>
   );

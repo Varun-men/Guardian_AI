@@ -176,15 +176,15 @@ const run = async () => {
                 key={s.id}
                 type="button"
                 onClick={() => selectScenario(s)}
-                className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between gap-2 ${
+                className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between gap-2 overflow-hidden min-w-0 ${
                   isSelected
                     ? "border-[#ff6b00] bg-[#ff6b00]/12 shadow-[0_0_15px_rgba(255,107,0,0.2)]"
                     : "border-white/10 bg-[#0c0c0e] hover:border-[#ff6b00]/40"
                 }`}
               >
-                <div className="flex items-center justify-between gap-1 w-full">
+                <div className="flex items-center justify-between gap-1 w-full min-w-0">
                   <span
-                    className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded"
+                    className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded min-w-0 break-words leading-tight"
                     style={{
                       background: `${s.badgeColor}20`,
                       color: s.badgeColor,
