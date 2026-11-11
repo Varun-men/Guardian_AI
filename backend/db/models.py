@@ -226,6 +226,7 @@ class Draft(Base):
 
 
 # ---------------------------------------
+# ---------------------------------------
 # 5. REVIEW MODEL
 # Stores review information
 # ---------------------------------------
@@ -241,6 +242,11 @@ class Review(Base):
     draft_id: Mapped[str] = mapped_column(
         ForeignKey("drafts.id"),
         nullable=False
+    )
+
+    assigned_reviewer_id: Mapped[str | None] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=True
     )
 
     submitted_text: Mapped[str] = mapped_column(
@@ -262,6 +268,10 @@ class Review(Base):
         back_populates="reviews"
     )
 
+    assigned_reviewer: Mapped["User | None"] = relationship(
+        foreign_keys=[assigned_reviewer_id]
+    )
+
     claims: Mapped[list["Claim"]] = relationship(
         back_populates="review"
     )
@@ -271,7 +281,6 @@ class Review(Base):
     )
 
 
-# ---------------------------------------
 # 6. CLAIM MODEL
 # Stores individual claims extracted from drafts
 # ---------------------------------------
@@ -432,6 +441,7 @@ class User(Base):
 
 
 # ---------------------------------------
+# ---------------------------------------
 # 9. FINDING MODEL
 # Stores issues detected during review
 # ---------------------------------------
@@ -451,6 +461,11 @@ class Finding(Base):
 
     claim_id: Mapped[str | None] = mapped_column(
         ForeignKey("claims.id"),
+        nullable=True
+    )
+
+    assigned_reviewer_id: Mapped[str | None] = mapped_column(
+        ForeignKey("users.id"),
         nullable=True
     )
 
@@ -489,6 +504,10 @@ class Finding(Base):
         default="unverified"
     )
 
+    assigned_reviewer: Mapped["User | None"] = relationship(
+        foreign_keys=[assigned_reviewer_id]
+    )
+
     review: Mapped["Review"] = relationship(
         back_populates="findings"
     )
@@ -498,7 +517,6 @@ class Finding(Base):
     )
 
 
-# ---------------------------------------
 # 10. ALERT MODEL
 # Stores outdated claim notifications
 # ---------------------------------------

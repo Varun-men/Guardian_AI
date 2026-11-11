@@ -1,5 +1,4 @@
-
-import uuid
+﻿from typing import Literal
 
 from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException
@@ -9,6 +8,7 @@ from backend.auth.dependencies import get_db, require_role
 from backend.db.models import (
     Draft,
     Review,
+    Claim,
     Finding,
     ClaimLedger,
     Fact,
@@ -17,17 +17,164 @@ from backend.db.models import (
 )
 from backend.services.audit import record_audit
 
-router = APIRouter(prefix="/api/review", tags=["Review"])
 
+router = APIRouter(tags=["Reviews"])
+
+
+# ============================================================
+# Reviewer Assignment
+# ============================================================
+
+class ReviewerAssignment(BaseModel):
+    reviewer_id: str
+
+
+@router.patch("/api/reviews/{review_id}/assign")
+def assign_reviewer(
+    review_id: str,
+    payload: ReviewerAssignment,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    try:
+        review = db.query(Review).filter(
+            Review.id == review_id
+        ).first()
+
+        if not review:
+            raise HTTPException(status_code=404, detail="Review not found")
+
+        reviewer = db.query(User).filter(
+            User.id == payload.reviewer_id
+        ).first()
+
+        if not reviewer:
+            raise HTTPException(status_code=404, detail="Reviewer not found")
+
+        if not reviewer.is_active:
+            raise HTTPException(status_code=400, detail="Reviewer is inactive")
+
+        if reviewer.role != "reviewer":
+            raise HTTPException(
+                status_code=400,
+                detail="User does not have reviewer role"
+            )
+
+        old_value = {
+            "assigned_reviewer_id": review.assigned_reviewer_id
+        }
+
+        review.assigned_reviewer_id = reviewer.id
+
+        record_audit(
+            db=db,
+            actor_user_id=current_user.id,
+            action="review.assigned",
+            entity_type="review",
+            entity_id=review.id,
+            old_value=old_value,
+            new_value={"assigned_reviewer_id": reviewer.id}
+        )
+
+        db.commit()
+        db.refresh(review)
+
+        return {
+            "message": "Reviewer assigned successfully",
+            "review_id": review.id,
+            "reviewer_id": reviewer.id
+        }
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
+        raise
+
+
+# ============================================================
+# Claim Decision
+# ============================================================
+
+class ClaimDecision(BaseModel):
+    decision: Literal["approved", "rejected", "needs_revision"]
+
+
+@router.patch("/api/reviews/{review_id}/claims/{claim_id}/decision")
+def decide_claim(
+    review_id: str,
+    claim_id: str,
+    payload: ClaimDecision,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin", "reviewer")),
+):
+    try:
+        review = db.query(Review).filter(
+            Review.id == review_id
+        ).first()
+
+        if not review:
+            raise HTTPException(status_code=404, detail="Review not found")
+
+        if current_user.role == "reviewer":
+            if review.assigned_reviewer_id != current_user.id:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Review is not assigned to you"
+                )
+
+        claim = db.query(Claim).filter(
+            Claim.id == claim_id,
+            Claim.review_id == review_id
+        ).first()
+
+        if not claim:
+            raise HTTPException(status_code=404, detail="Claim not found")
+
+        old_value = {"status": claim.status}
+        claim.status = payload.decision
+
+        record_audit(
+            db=db,
+            actor_user_id=current_user.id,
+            action="claim.decision",
+            entity_type="claim",
+            entity_id=claim.id,
+            old_value=old_value,
+            new_value={"status": payload.decision}
+        )
+
+        db.commit()
+        db.refresh(claim)
+
+        return {
+            "message": "Claim decision recorded successfully",
+            "claim_id": claim.id,
+            "status": claim.status
+        }
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
+        raise
+
+
+# ============================================================
+# Finding Decision
+# ============================================================
 
 class FindingDecision(BaseModel):
     decision: str
+
 
 class ApproveDraftRequest(BaseModel):
     content: str
 
 
-@router.post("/findings/{finding_id}/decision")
+@router.post("/api/review/findings/{finding_id}/decision")
 def decide_finding(
     finding_id: str,
     data: FindingDecision,
@@ -37,7 +184,10 @@ def decide_finding(
     decision = data.decision.lower()
 
     if decision not in ("applied", "dismissed"):
-        raise HTTPException(400, "Decision must be applied or dismissed")
+        raise HTTPException(
+            400,
+            "Decision must be applied or dismissed"
+        )
 
     finding = db.query(Finding).filter(
         Finding.id == finding_id
@@ -69,6 +219,7 @@ def decide_finding(
             entity_id=finding.id,
             new_value={"decision": decision},
         )
+
         db.commit()
 
         return {
@@ -82,13 +233,19 @@ def decide_finding(
         raise
 
 
-@router.get("/{draft_id}/decisions")
+# ============================================================
+# Get Finding Decisions
+# ============================================================
+
+@router.get("/api/review/{draft_id}/decisions")
 def get_decisions(
     draft_id: str,
     db: Session = Depends(get_db),
     user: User = Depends(require_role("admin", "creator")),
 ):
-    draft = db.query(Draft).filter(Draft.id == draft_id).first()
+    draft = db.query(Draft).filter(
+        Draft.id == draft_id
+    ).first()
 
     if not draft:
         raise HTTPException(404, "Draft not found")
@@ -118,17 +275,26 @@ def get_decisions(
             else None
         )
 
-    return {"draft_id": draft_id, "decisions": result}
+    return {
+        "draft_id": draft_id,
+        "decisions": result
+    }
 
 
-@router.post("/{draft_id}/approve")
+# ============================================================
+# Approve Draft
+# ============================================================
+
+@router.post("/api/review/{draft_id}/approve")
 def approve_draft(
     draft_id: str,
     data: ApproveDraftRequest,
     db: Session = Depends(get_db),
     user: User = Depends(require_role("admin", "creator")),
 ):
-    draft = db.query(Draft).filter(Draft.id == draft_id).first()
+    draft = db.query(Draft).filter(
+        Draft.id == draft_id
+    ).first()
 
     if not draft:
         raise HTTPException(404, "Draft not found")
@@ -167,8 +333,7 @@ def approve_draft(
         draft.status = "approved"
         review.status = "approved"
 
-        # Only create ledger entries when a real fact association
-        # exists in the finding evidence.
+        # Create ledger entries only when a valid fact association exists.
         for finding in review.findings:
             for item in finding.evidence or []:
                 fact_id = item.get("fact_id")

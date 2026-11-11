@@ -76,5 +76,25 @@ def search_evidence(query, top_k=3):
 if __name__ == "__main__":
     print("Evidence collection count:", collection.count())
 
-    # Sample data is deliberately not inserted automatically.
-    print("Evidence store ready.")
+    # Add trusted sample evidence for testing
+    add_evidence(
+        "passage_1",
+        "Orbit is a productivity application designed for teams.",
+        "Product Documentation"
+    )
+
+    add_evidence(
+        "passage_2",
+        "Orbit subscription plans start at $29 per month.",
+        "Pricing Documentation"
+    )
+
+    add_evidence(
+        "passage_3",
+        "Orbit is currently used by 50,000 teams.",
+        "Company Report"
+    )
+
+    print("\nEvidence collection count:", collection.count())
+
+    print("\nEvidence store ready.")
