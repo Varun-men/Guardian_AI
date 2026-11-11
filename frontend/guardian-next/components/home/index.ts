@@ -1,0 +1,9 @@
+export { Navbar } from "./Navbar";
+export { Hero } from "./Hero";
+export { HeroTitle } from "./HeroTitle";
+export { HowCards } from "./HowCards";
+export { WhatTabs } from "./WhatTabs";
+export { ClosingCta } from "./ClosingCta";
+export { Faq } from "./Faq";
+export { Footer } from "./Footer";
+export { Reveal } from "./Reveal";

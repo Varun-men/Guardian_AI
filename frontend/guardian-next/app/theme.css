@@ -1,0 +1,215 @@
+/* Guardian AI theme — Bloodline Design System */
+:root {
+  --blood: #b0121b;
+  --blood-hover: #c8161f;
+  --deep: #3a080c;
+  --ink: #0f0708;
+  --s1: #190c0d;
+  --s2: #241213;
+  --line: rgba(255, 226, 220, 0.11);
+  --t1: #f7ece8;
+  --t2: #cdb9b3;
+  --t3: #9b8780;
+  --yellow: #f5b82e;
+  --orange: #ec7a1c;
+  --redhi: #f2675f;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* Legacy aliases mapped to design tokens */
+  --bg: var(--ink);
+  --surface: var(--s1);
+  --raised: var(--s2);
+  --text: var(--t1);
+  --text2: var(--t2);
+  --muted: var(--t3);
+  --accent: var(--blood);
+  --accent-text: var(--redhi);
+  --neon: var(--blood);
+  --yellow-soft: rgba(245, 184, 46, 0.14);
+  --high: var(--redhi);
+  --medium: var(--orange);
+  --ok: #10b981;
+  --a11y: var(--t2);
+}
+
+html, body {
+  background: var(--ink);
+  color: var(--t1);
+  font-family: var(--font-sans), var(--sans), system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.panel {
+  background: var(--s1);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+
+.panel-raised {
+  background: var(--s2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--t1);
+}
+
+.muted {
+  color: var(--t3);
+}
+
+.text2 {
+  color: var(--t2);
+}
+
+.neon {
+  color: var(--redhi);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono), var(--mono), monospace;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--line);
+  background: var(--s2);
+  color: var(--t1);
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease), border-color 0.15s var(--ease), transform 0.1s var(--ease);
+}
+
+.btn:hover {
+  background: rgba(255, 226, 220, 0.08);
+  border-color: rgba(242, 103, 95, 0.55);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: var(--blood);
+  border-color: var(--blood);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--blood-hover);
+  border-color: var(--blood-hover);
+}
+
+.btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--t1);
+  border: 1px solid var(--line);
+  background: rgba(244, 236, 230, 0.06);
+}
+
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--redhi);
+  flex: none;
+}
+
+.dot.y {
+  background: var(--yellow);
+}
+
+.dot.o {
+  background: var(--orange);
+}
+
+.dot.g {
+  background: #10b981;
+}
+
+mark.claim {
+  background: rgba(242, 109, 99, 0.22);
+  color: inherit;
+  border-bottom: 2px solid var(--redhi);
+  cursor: pointer;
+  border-radius: 2px;
+  padding: 2px 3px;
+}
+
+.cite {
+  font-family: var(--font-mono), var(--mono), ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--t3);
+}
+
+.cite-quote {
+  border-left: 2px solid var(--redhi);
+  padding-left: 12px;
+  color: var(--t2);
+  font-size: 14px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  color: var(--t2);
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.15s var(--ease), color 0.15s var(--ease), border-color 0.15s var(--ease);
+  border: 1px solid transparent;
+}
+
+.nav-link:hover {
+  color: var(--t1);
+  background: rgba(255, 226, 220, 0.06);
+  border-color: var(--line);
+}
+
+.nav-link[aria-current="page"] {
+  color: #fff;
+  background: var(--blood);
+  border-color: var(--blood);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--t1);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

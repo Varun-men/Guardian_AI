@@ -1,0 +1,23 @@
+
+{
+  "banned_words": [
+  "guaranteed success",
+  "guarantees success",
+  "guarantee success",
+  "guaranteeing success",
+  "risk free",
+  "unlimited profits",
+  "100% guaranteed"
+],
+  "competitors": [
+    "NovaTech",
+    "CloudPeak",
+    "AlphaSoft"
+  ],
+  "approved_product_names": [
+    "Orbit",
+    "Orbit Starter",
+    "Orbit Pro"
+  ],
+  "required_disclaimers": []
+}
