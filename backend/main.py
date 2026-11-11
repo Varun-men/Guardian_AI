@@ -54,3 +54,9 @@ app.include_router(facts_router)
 
 from backend.api.reviews import router as reviews_router
 app.include_router(reviews_router)
+
+from backend.api.findings import router as findings_router
+app.include_router(findings_router)
+
+from backend.api.audit import router as audit_router
+app.include_router(audit_router)

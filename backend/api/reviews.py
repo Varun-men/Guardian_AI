@@ -75,3 +75,73 @@ def assign_reviewer(
     except Exception:
         db.rollback()
         raise
+
+from typing import Literal
+from pydantic import BaseModel
+
+
+class ClaimDecision(BaseModel):
+    decision: Literal["approved", "rejected", "needs_revision"]
+
+
+@router.patch("/{review_id}/claims/{claim_id}/decision")
+def decide_claim(
+    review_id: str,
+    claim_id: str,
+    payload: ClaimDecision,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin", "reviewer")),
+):
+    from backend.db.models import Claim
+
+    try:
+        review = db.query(Review).filter(
+            Review.id == review_id
+        ).first()
+
+        if not review:
+            raise HTTPException(status_code=404, detail="Review not found")
+
+        if current_user.role == "reviewer":
+            if review.assigned_reviewer_id != current_user.id:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Review is not assigned to you"
+                )
+
+        claim = db.query(Claim).filter(
+            Claim.id == claim_id,
+            Claim.review_id == review_id
+        ).first()
+
+        if not claim:
+            raise HTTPException(status_code=404, detail="Claim not found")
+
+        old_value = {"status": claim.status}
+        claim.status = payload.decision
+
+        record_audit(
+            db=db,
+            actor_user_id=current_user.id,
+            action="claim.decision",
+            entity_type="claim",
+            entity_id=claim.id,
+            old_value=old_value,
+            new_value={"status": payload.decision}
+        )
+
+        db.commit()
+        db.refresh(claim)
+
+        return {
+            "message": "Claim decision recorded successfully",
+            "claim_id": claim.id,
+            "status": claim.status
+        }
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
+        raise
