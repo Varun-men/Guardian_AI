@@ -95,9 +95,16 @@ class Review(Base):
     __tablename__ = "reviews"
 
     id: Mapped[str] = mapped_column(String(100), primary_key=True)
+
     draft_id: Mapped[str] = mapped_column(
         ForeignKey("drafts.id"), nullable=False
     )
+
+    assigned_reviewer_id: Mapped[str | None] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=True
+    )
+
     submitted_text: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(String(50), default="pending")
 
@@ -106,8 +113,13 @@ class Review(Base):
     )
 
     draft: Mapped["Draft"] = relationship(back_populates="reviews")
+    assigned_reviewer: Mapped["User | None"] = relationship(
+        foreign_keys=[assigned_reviewer_id]
+    )
     claims: Mapped[list["Claim"]] = relationship(back_populates="review")
     findings: Mapped[list["Finding"]] = relationship(back_populates="review")
+
+
 
 
 # ---------------------------------------
@@ -203,33 +215,36 @@ class User(Base):
 # 8. FINDING MODEL
 # Stores issues detected during review
 # ---------------------------------------
-
 class Finding(Base):
     __tablename__ = "findings"
 
     id: Mapped[str] = mapped_column(String(100), primary_key=True)
+    review_id: Mapped[str] = mapped_column(ForeignKey("reviews.id"), nullable=False)
+    claim_id: Mapped[str | None] = mapped_column(ForeignKey("claims.id"), nullable=True)
 
-    review_id: Mapped[str] = mapped_column(
-        ForeignKey("reviews.id"), nullable=False
-    )
-    claim_id: Mapped[str | None] = mapped_column(
-        ForeignKey("claims.id"), nullable=True
+    assigned_reviewer_id: Mapped[str | None] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=True
     )
 
     finding_type: Mapped[str] = mapped_column(String(100), nullable=False)
     severity: Mapped[str] = mapped_column(String(50), nullable=False)
     explanation: Mapped[str] = mapped_column(Text, nullable=False)
-
     evidence: Mapped[list | None] = mapped_column(JSON, nullable=True)
     suggested_edit: Mapped[str | None] = mapped_column(Text, nullable=True)
     confidence: Mapped[float] = mapped_column(Float, default=0.0)
-    verification_status: Mapped[str] = mapped_column(
-        String(50), default="unverified"
+    verification_status: Mapped[str] = mapped_column(String(50), default="unverified")
+
+    assigned_reviewer: Mapped["User | None"] = relationship(
+        foreign_keys=[assigned_reviewer_id]
     )
 
     review: Mapped["Review"] = relationship(back_populates="findings")
     claim: Mapped["Claim | None"] = relationship(back_populates="findings")
 
+
+
+    
 
 # ---------------------------------------
 # 9. ALERT MODEL

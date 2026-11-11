@@ -51,3 +51,6 @@ def database_check():
 
 from backend.api.facts import router as facts_router
 app.include_router(facts_router)
+
+from backend.api.reviews import router as reviews_router
+app.include_router(reviews_router)
