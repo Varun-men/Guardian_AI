@@ -691,7 +691,7 @@ h2.big {
   color: #fff;
 }
 
-.panel {
+.feature-panel {
   display: none;
   grid-template-columns: 1.2fr 1fr;
   gap: 64px;
@@ -699,19 +699,19 @@ h2.big {
   border-top: 1px solid var(--line);
 }
 
-.panel.on {
+.feature-panel.on {
   display: grid;
   animation: rise 0.4s var(--ease);
 }
 
-.panel .c {
+.feature-panel .c {
   font: 500 14px var(--mono);
   color: var(--t3);
   margin: 0 0 20px;
   letter-spacing: 0.08em;
 }
 
-.panel h3 {
+.feature-panel h3 {
   font-size: clamp(34px, 4.4vw, 58px);
   line-height: 1.05;
   letter-spacing: -0.03em;
@@ -728,13 +728,13 @@ h2.big {
   text-transform: uppercase;
 }
 
-.panel ul {
+.feature-panel ul {
   list-style: none;
   margin: 0 0 36px;
   padding: 0;
 }
 
-.panel li {
+.feature-panel li {
   padding: 15px 0;
   border-bottom: 1px solid var(--line);
   font-size: 18px;
@@ -744,7 +744,7 @@ h2.big {
   color: var(--t1);
 }
 
-.panel li::before {
+.feature-panel li::before {
   content: "";
   width: 8px;
   height: 8px;
@@ -984,7 +984,7 @@ h1 .w {
   .how {
     padding-top: 84px;
   }
-  .panel.on {
+  .feature-panel.on {
     grid-template-columns: 1fr;
     gap: 32px;
   }

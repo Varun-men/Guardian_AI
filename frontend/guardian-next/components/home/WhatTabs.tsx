@@ -107,7 +107,7 @@ export function WhatTabs() {
         {TABS.map((item, i) => (
           <div
             key={item.id}
-            className={`panel ${activeTab === i ? "on" : ""}`}
+            className={`feature-panel ${activeTab === i ? "on" : ""}`}
             role="tabpanel"
             id={item.id}
             aria-labelledby={item.tabId}
