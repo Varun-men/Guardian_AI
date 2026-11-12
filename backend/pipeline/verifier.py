@@ -316,6 +316,12 @@ Return ONLY the structured verification result.
             # ------------------------------------------------
 
             result = response.parsed
+            logger.info(
+                "Verifier response for claim %s: status=%s, passage_ids=%s",
+                claim_id,
+                getattr(result, "status", None),
+                getattr(result, "evidence_passage_ids", None)
+                )
 
 
             if result is None:

@@ -69,6 +69,7 @@ const Ico = {
 const NAV_TABS = [
   { href: "/analyze", label: "Analyze", icon: Ico.analyze },
   { href: "/review", label: "Review", icon: Ico.review },
+  { href: "/sources", label: "Sources", icon: Ico.search },
   { href: "/admin", label: "Fact Registry", icon: Ico.admin },
   { href: "/ledger", label: "Living Ledger", icon: Ico.ledger },
   { href: "/analytics", label: "Analytics", icon: Ico.analytics },

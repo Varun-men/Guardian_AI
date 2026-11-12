@@ -112,6 +112,8 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
 
         if (cancelled) return;
 
+        setApproved(data.status === "approved");
+
         const restored: Record<string, "applied" | "dismissed"> = {};
 
         for (const [id, decision] of Object.entries(
@@ -120,6 +122,26 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
           if (decision === "applied" || decision === "dismissed") {
             restored[id] = decision;
           }
+        }
+
+        if (typeof data.content === "string") {
+          setContent(data.content);
+
+          const restoredDeltas: AppliedDelta[] = issues
+            .filter(
+              (issue) =>
+                restored[issue.id] === "applied" &&
+                issue.suggested_fix &&
+                issue.severity !== "ACCESSIBILITY" &&
+                issue.category !== "MISSING_ALT_TEXT"
+            )
+            .map((issue) => ({
+              id: issue.id,
+              originalText: issue.flagged_text,
+              appliedFix: issue.suggested_fix!,
+            }));
+
+          setAppliedDeltas(restoredDeltas);
         }
 
         setResolved(restored);
@@ -144,7 +166,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
     };
   }, [analysis.draft_id, isDemo]);
 
-  // Apply a suggested fix and save the decision.
+  // Apply a suggested fix and persist both content and decision.
   const apply = async (id: string) => {
     if (saving) return;
 
@@ -152,6 +174,16 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
 
     if (!issue?.suggested_fix || !issue.flagged_text) {
       setActionError("No valid suggested fix is available.");
+      return;
+    }
+
+    if (
+      issue.severity === "ACCESSIBILITY" ||
+      issue.category === "MISSING_ALT_TEXT"
+    ) {
+      setActionError(
+        "This accessibility finding requires an image alt-text update, not a draft text replacement."
+      );
       return;
     }
 
@@ -169,6 +201,13 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
       return;
     }
 
+    const index = content.indexOf(issue.flagged_text);
+
+    const updatedContent =
+      content.slice(0, index) +
+      issue.suggested_fix +
+      content.slice(index + issue.flagged_text.length);
+
     setSaving(true);
 
     try {
@@ -177,17 +216,13 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
           `/api/review/findings/${encodeURIComponent(id)}/decision`,
           {
             method: "POST",
-            body: JSON.stringify({ decision: "applied" }),
+            body: JSON.stringify({
+              decision: "applied",
+              content: updatedContent,
+            }),
           }
         );
       }
-
-      const index = content.indexOf(issue.flagged_text);
-
-      const updatedContent =
-        content.slice(0, index) +
-        issue.suggested_fix +
-        content.slice(index + issue.flagged_text.length);
 
       setContent(updatedContent);
 
@@ -265,6 +300,8 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
     const targets = issues.filter(
       (issue) =>
         issue.suggested_fix &&
+        issue.severity !== "ACCESSIBILITY" &&
+        issue.category !== "MISSING_ALT_TEXT" &&
         issue.confidence >= 0.75 &&
         !resolved[issue.id] &&
         content.includes(issue.flagged_text)
@@ -275,47 +312,56 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
       return;
     }
 
+    let newContent = content;
+    const newDeltas = [...appliedDeltas];
+    const newResolved = { ...resolved };
+    const appliedIssues: typeof targets = [];
+
+    for (const issue of targets) {
+      const index = newContent.indexOf(issue.flagged_text);
+
+      if (index < 0) continue;
+
+      newContent =
+        newContent.slice(0, index) +
+        issue.suggested_fix! +
+        newContent.slice(index + issue.flagged_text.length);
+
+      newDeltas.push({
+        id: issue.id,
+        originalText: issue.flagged_text,
+        appliedFix: issue.suggested_fix!,
+      });
+
+      newResolved[issue.id] = "applied";
+      appliedIssues.push(issue);
+    }
+
+    if (appliedIssues.length === 0) {
+      setActionError("No matching text could be updated.");
+      return;
+    }
+
     setSaving(true);
 
     try {
       if (!isDemo) {
-        await Promise.all(
-          targets.map((issue) =>
-            apiFetch(
-              `/api/review/findings/${encodeURIComponent(issue.id)}/decision`,
-              {
-                method: "POST",
-                body: JSON.stringify({ decision: "applied" }),
-              }
-            )
-          )
-        );
+        for (const issue of appliedIssues) {
+          await apiFetch(
+            `/api/review/findings/${encodeURIComponent(issue.id)}/decision`,
+            {
+              method: "POST",
+              body: JSON.stringify({
+                decision: "applied",
+                content: newContent,
+              }),
+            }
+          );
+        }
       }
 
-      let newContent = content;
-      const newDeltas = [...appliedDeltas];
-      const newResolved = { ...resolved };
-      let count = 0;
-
-      for (const issue of targets) {
-        const index = newContent.indexOf(issue.flagged_text);
-
-        if (index < 0) continue;
-
-        newContent =
-          newContent.slice(0, index) +
-          issue.suggested_fix! +
-          newContent.slice(index + issue.flagged_text.length);
-
-        newDeltas.push({
-          id: issue.id,
-          originalText: issue.flagged_text,
-          appliedFix: issue.suggested_fix!,
-        });
-
-        newResolved[issue.id] = "applied";
+      for (const issue of appliedIssues) {
         recordDecision("applied");
-        count++;
       }
 
       setContent(newContent);
@@ -323,7 +369,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
       setResolved(newResolved);
 
       setActionError(
-        `Applied ${count} high-confidence fix${count === 1 ? "" : "es"} across the draft.`
+        `Applied ${appliedIssues.length} high-confidence fix${appliedIssues.length === 1 ? "" : "es"} across the draft.`
       );
     } catch (error) {
       setActionError(
@@ -532,7 +578,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
 
           <p className="text-sm text-[#a1a1aa] mt-1 flex items-center gap-2 flex-wrap">
             <span>{issues.length} total findings</span>
-            <span className="text-[#71717a]">•</span>
+            <span className="text-[#71717a]">â€¢</span>
 
             <span
               className={
@@ -543,10 +589,10 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
             >
               {pending > 0
                 ? `${pending} decision required`
-                : "All decisions complete ✓"}
+                : "All decisions complete âœ“"}
             </span>
 
-            <span className="text-[#71717a]">•</span>
+            <span className="text-[#71717a]">â€¢</span>
 
             <span className="text-xs text-[#a1a1aa]">
               Keyboard:{" "}
@@ -595,7 +641,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
                 >
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-                ✓ Copied to Clipboard
+                âœ“ Copied to Clipboard
               </>
             ) : (
               <>
@@ -633,7 +679,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
                 boxShadow: "0 0 20px rgba(255,107,0,0.45)",
               }}
             >
-              Approved ✓ Open Living Ledger
+              Approved âœ“ Open Living Ledger
             </Link>
           ) : (
             <button
@@ -641,6 +687,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
               disabled={
                 pending > 0 ||
                 saving ||
+                approved ||
                 !decisionsLoaded ||
                 isDemo
               }
@@ -649,10 +696,12 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
               {saving
                 ? "Saving..."
                 : isDemo
-                  ? "Demo — Approval Disabled"
-                  : !decisionsLoaded
-                    ? "Loading Decisions..."
-                    : "Approve Post to Ledger"}
+                  ? "Demo â€” Approval Disabled"
+                  : approved
+                    ? "Post Approved"
+                    : !decisionsLoaded
+                      ? "Loading Decisions..."
+                      : "Approve Post to Ledger"}
             </button>
           )}
         </div>
@@ -677,7 +726,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
             disabled={saving}
             className="btn text-xs px-3 py-1.5 h-auto font-semibold border-[#ff6b00]/30 hover:border-[#ff6b00] text-[#ff6b00]"
           >
-            ⚡ Accept All Safe Fixes
+            âš¡ Accept All Safe Fixes
           </button>
 
           <button
@@ -762,7 +811,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
             </div>
 
             <span className="text-xs text-[#71717a] font-mono">
-              {content.split(/\s+/).filter(Boolean).length} words ·{" "}
+              {content.split(/\s+/).filter(Boolean).length} words Â·{" "}
               {content.length} chars
             </span>
           </div>
@@ -839,7 +888,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
                         >
                           <div className="flex items-center gap-2">
                             <span className="text-red-400 font-bold">
-                              − BEFORE:
+                              âˆ’ BEFORE:
                             </span>
 
                             <del className="line-through text-red-300 bg-red-950/40 px-1.5 py-0.5 rounded border border-red-500/20">
@@ -890,7 +939,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
                   onClick={copyCleanText}
                   className="text-[#ff6b00] hover:underline font-bold"
                 >
-                  {copied ? "✓ Copied" : "Copy text"}
+                  {copied ? "âœ“ Copied" : "Copy text"}
                 </button>
               </div>
             </div>
@@ -914,7 +963,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
                     {issue.flagged_text}
                   </span>
 
-                  <span className="text-xs text-[#71717a]">•</span>
+                  <span className="text-xs text-[#71717a]">â€¢</span>
 
                   <span className="text-xs text-[#ff9500]">
                     {issue.category.toLowerCase().replace(/_/g, " ")}
@@ -945,6 +994,12 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
               active={active === issue.id}
               resolved={resolved[issue.id]}
               onSelect={() => setActive(issue.id)}
+              canApply={
+                issue.severity !== "ACCESSIBILITY" &&
+                issue.category !== "MISSING_ALT_TEXT" &&
+                Boolean(issue.flagged_text) &&
+                content.includes(issue.flagged_text)
+              }
               onApply={() => void apply(issue.id)}
               onDismiss={() => void dismiss(issue.id)}
             />

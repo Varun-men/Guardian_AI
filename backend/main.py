@@ -297,6 +297,18 @@ def analyze_draft(
                 for item in evidence_items
             }
 
+            logger.info(
+                "Retrieved evidence for claim %s: %s",
+                claim.claim_id,
+                [item["passage_id"] for item in evidence_items],
+)
+
+            logger.info(
+                "Verifier selected passage IDs for claim %s: %s",
+                claim.claim_id,
+                verification.evidence_passage_ids,
+            )
+
             verified_evidence = []
 
             for passage_id in (

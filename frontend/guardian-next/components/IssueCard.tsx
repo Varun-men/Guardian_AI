@@ -98,6 +98,7 @@ export default function IssueCard({
   issue,
   active,
   resolved,
+  canApply,
   onSelect,
   onApply,
   onDismiss,
@@ -105,6 +106,7 @@ export default function IssueCard({
   issue: Issue;
   active: boolean;
   resolved?: "applied" | "dismissed";
+  canApply: boolean;
   onSelect: () => void;
   onApply: () => void;
   onDismiss: () => void;
@@ -465,6 +467,25 @@ export default function IssueCard({
             </div>
           )}
 
+          {/* Asset-level accessibility findings need a different workflow. */}
+          {!resolved && !canApply && issue.suggested_fix && (
+            <div
+              style={{
+                padding: "11px 14px",
+                borderRadius: 10,
+                background: "rgba(245, 184, 46, 0.08)",
+                border: "1px solid rgba(245, 184, 46, 0.2)",
+                color: "var(--yellow)",
+                fontSize: 13,
+                lineHeight: 1.5,
+              }}
+            >
+              This finding cannot be applied to draft text. Update the
+              image's alt text in the underlying asset or publishing
+              editor, then mark this finding reviewed.
+            </div>
+          )}
+
           {/* Actions */}
           {resolved ? (
             <div
@@ -529,7 +550,7 @@ export default function IssueCard({
               style={{ display: "flex", gap: 10, flexWrap: "wrap", paddingTop: 4 }}
               onClick={(event) => event.stopPropagation()}
             >
-              {issue.suggested_fix && (
+              {issue.suggested_fix && canApply && (
                 <button
                   type="button"
                   className="ic-apply-btn"

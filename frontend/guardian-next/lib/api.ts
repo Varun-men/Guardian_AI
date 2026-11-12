@@ -14,7 +14,9 @@ export async function apiFetch(
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
-      "Content-Type": "application/json",
+      ...(typeof FormData !== "undefined" && options.body instanceof FormData
+        ? {}
+        : { "Content-Type": "application/json" }),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },

@@ -341,6 +341,13 @@ export default function PublicDemoPage() {
                 issue={issue}
                 active={activeId === issue.id}
                 resolved={resolutions[issue.id]}
+                canApply={
+                  Boolean(issue.suggested_fix) &&
+                  issue.severity !== "ACCESSIBILITY" &&
+                  issue.category !== "MISSING_ALT_TEXT" &&
+                  Boolean(issue.flagged_text) &&
+                  draft.includes(issue.flagged_text)
+                }
                 onSelect={() => setActiveId(issue.id)}
                 onApply={() => applyFix(issue.id)}
                 onDismiss={() => dismissIssue(issue.id)}

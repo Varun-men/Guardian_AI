@@ -168,6 +168,7 @@ def decide_claim(
 
 class FindingDecision(BaseModel):
     decision: str
+    content: str | None = None
 
 
 class ApproveDraftRequest(BaseModel):
@@ -188,6 +189,11 @@ def decide_finding(
             400,
             "Decision must be applied or dismissed"
         )
+    if decision == "applied" and data.content is None:
+        raise HTTPException(
+            400,
+            "Updated draft content is required when applying a fix"
+    )
 
     finding = db.query(Finding).filter(
         Finding.id == finding_id
