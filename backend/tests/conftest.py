@@ -1,13 +1,22 @@
+
+import sys
+from pathlib import Path
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 
+# Ensure repository root is available for imports.
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 from backend.main import app
-from backend.db.database import Base
+from backend.db.database import Base, get_db as database_get_db
+from backend.auth.dependencies import get_db as auth_get_db
 from backend.db.models import *
-from backend.auth.dependencies import get_db
 
 
 @pytest.fixture
@@ -33,7 +42,8 @@ def client():
         finally:
             db.close()
 
-    app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[database_get_db] = override_get_db
+    app.dependency_overrides[auth_get_db] = override_get_db
 
     with TestClient(app) as test_client:
         yield test_client

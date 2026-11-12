@@ -1,9 +1,16 @@
-from pydantic import BaseModel
+
+from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.auth.dependencies import get_db, require_role
-from backend.db.models import Finding, User
+from backend.db.models import (
+    Finding,
+    User,
+    Fact,
+    Source,
+    SourcePassage,
+)
 from backend.services.audit import record_audit
 
 router = APIRouter(prefix="/api/findings", tags=["Findings"])
@@ -11,6 +18,15 @@ router = APIRouter(prefix="/api/findings", tags=["Findings"])
 
 class ReviewerAssignment(BaseModel):
     reviewer_id: str
+
+
+class FindingVerification(BaseModel):
+    verification_status: str
+
+
+class FactAssociation(BaseModel):
+    fact_id: str = Field(min_length=1)
+    passage_id: str = Field(min_length=1)
 
 
 @router.patch("/{finding_id}/assign")
@@ -73,9 +89,6 @@ def assign_finding_reviewer(
         db.rollback()
         raise
 
-class FindingVerification(BaseModel):
-    verification_status: str
-
 
 @router.patch("/{finding_id}/verify")
 def verify_finding(
@@ -87,7 +100,10 @@ def verify_finding(
     allowed_statuses = ["verified", "unverified", "rejected"]
 
     if payload.verification_status not in allowed_statuses:
-        raise HTTPException(status_code=400, detail="Invalid verification status")
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid verification status"
+        )
 
     finding = db.query(Finding).filter(
         Finding.id == finding_id
@@ -96,10 +112,19 @@ def verify_finding(
     if not finding:
         raise HTTPException(status_code=404, detail="Finding not found")
 
-    if current_user.role == "reviewer" and finding.assigned_reviewer_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Finding is not assigned to you")
+    if (
+        current_user.role == "reviewer"
+        and finding.assigned_reviewer_id != current_user.id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Finding is not assigned to you"
+        )
 
-    old_value = {"verification_status": finding.verification_status}
+    old_value = {
+        "verification_status": finding.verification_status
+    }
+
     finding.verification_status = payload.verification_status
 
     record_audit(
@@ -109,7 +134,9 @@ def verify_finding(
         entity_type="finding",
         entity_id=finding.id,
         old_value=old_value,
-        new_value={"verification_status": payload.verification_status}
+        new_value={
+            "verification_status": payload.verification_status
+        }
     )
 
     db.commit()
@@ -120,3 +147,165 @@ def verify_finding(
         "finding_id": finding.id,
         "verification_status": finding.verification_status
     }
+
+
+@router.patch("/{finding_id}/associate-fact")
+def associate_finding_with_fact(
+    finding_id: str,
+    payload: FactAssociation,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin", "reviewer")),
+):
+    try:
+        # 1. Find the finding
+        finding = db.query(Finding).filter(
+            Finding.id == finding_id
+        ).first()
+
+        if not finding:
+            raise HTTPException(
+                status_code=404,
+                detail="Finding not found"
+            )
+
+        # 2. Reviewers can only modify findings assigned to them
+        if (
+            current_user.role == "reviewer"
+            and finding.assigned_reviewer_id != current_user.id
+        ):
+            raise HTTPException(
+                status_code=403,
+                detail="Finding is not assigned to you"
+            )
+
+        # 3. Find the selected fact
+        fact = db.query(Fact).filter(
+            Fact.id == payload.fact_id
+        ).first()
+
+        if not fact:
+            raise HTTPException(
+                status_code=404,
+                detail="Fact not found"
+            )
+
+        # 4. Check that the fact's source exists and is active
+        source = db.query(Source).filter(
+            Source.id == fact.source_id
+        ).first()
+
+        if not source or source.status != "active":
+            raise HTTPException(
+                status_code=400,
+                detail="Fact must belong to an active source"
+            )
+
+        # 5. Find the passage selected by the reviewer
+        passage = db.query(SourcePassage).filter(
+            SourcePassage.id == payload.passage_id
+        ).first()
+
+        if not passage:
+            raise HTTPException(
+                status_code=404,
+                detail="Evidence passage not found"
+            )
+
+        # 6. Ensure the passage belongs to the fact's source
+        if passage.source_id != fact.source_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Evidence passage does not belong to the fact's source"
+            )
+
+        # 7. Ensure the passage and fact refer to the same version
+        if passage.source_version != fact.source_version:
+            raise HTTPException(
+                status_code=400,
+                detail="Evidence passage version does not match fact version"
+            )
+
+        # 8. Find the matching evidence item on this finding
+        evidence_items = finding.evidence or []
+
+        if not isinstance(evidence_items, list):
+            raise HTTPException(
+                status_code=400,
+                detail="Finding evidence has an invalid format"
+            )
+
+        matching_item = None
+
+        for item in evidence_items:
+            if (
+                isinstance(item, dict)
+                and item.get("passage_id") == payload.passage_id
+            ):
+                matching_item = item
+                break
+
+        if not matching_item:
+            raise HTTPException(
+                status_code=400,
+                detail="Selected passage is not attached to this finding"
+            )
+
+        # 9. Verify the actual quotation against the passage content
+        cited_quote = matching_item.get("cited_evidence")
+
+        if (
+            not isinstance(cited_quote, str)
+            or not cited_quote.strip()
+            or cited_quote not in passage.content
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Cited quotation does not match the selected passage"
+            )
+
+        # 10. Save the association in the evidence JSON
+        old_fact_id = matching_item.get("fact_id")
+
+        matching_item["fact_id"] = fact.id
+        matching_item["source_id"] = source.id
+
+        # Reassign the JSON value so SQLAlchemy detects the change
+        finding.evidence = [dict(item) for item in evidence_items]
+
+        # 11. Record the change in the audit log
+        record_audit(
+            db=db,
+            actor_user_id=current_user.id,
+            action="finding.fact_associated",
+            entity_type="finding",
+            entity_id=finding.id,
+            old_value={
+                "fact_id": old_fact_id,
+                "passage_id": payload.passage_id
+            },
+            new_value={
+                "fact_id": fact.id,
+                "passage_id": passage.id,
+                "source_id": source.id,
+                "source_version": passage.source_version
+            }
+        )
+
+        db.commit()
+        db.refresh(finding)
+
+        return {
+            "message": "Fact successfully associated with finding",
+            "finding_id": finding.id,
+            "fact_id": fact.id,
+            "passage_id": passage.id,
+            "source_id": source.id,
+            "source_version": passage.source_version
+        }
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
+        raise

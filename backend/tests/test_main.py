@@ -1,22 +1,17 @@
+
 from types import SimpleNamespace
 
-from fastapi.testclient import TestClient
-
-from backend.main import app
 import backend.pipeline.claim_extractor as claim_extractor
 
 
-client = TestClient(app)
-
-
-def test_root_endpoint():
+def test_root_endpoint(client):
     response = client.get("/")
 
     assert response.status_code == 200
     assert response.json()["status"] == "running"
 
 
-def test_health_endpoint():
+def test_health_endpoint(client):
     response = client.get("/health")
 
     assert response.status_code == 200
@@ -26,7 +21,9 @@ def test_health_endpoint():
     }
 
 
-def test_review_endpoint_includes_deterministic_rule_issues(monkeypatch):
+def test_review_endpoint_includes_deterministic_rule_issues(
+    client, monkeypatch
+):
     # Mock AI claim extraction so this test does not require
     # Gemini credentials or an external AI API.
     monkeypatch.setattr(
@@ -68,7 +65,10 @@ def test_review_endpoint_includes_deterministic_rule_issues(monkeypatch):
 
     assert len(rule_issues) >= 2
 
-def test_review_endpoint_detects_missing_image_alt_text(monkeypatch):
+
+def test_review_endpoint_detects_missing_image_alt_text(
+    client, monkeypatch
+):
     monkeypatch.setattr(
         claim_extractor,
         "extract_claims",
