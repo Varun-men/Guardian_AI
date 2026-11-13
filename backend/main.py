@@ -13,45 +13,58 @@ from sqlalchemy.orm import Session
 from backend.api.facts import router as facts_router
 from backend.auth.routes import router as auth_router
 from backend.api.sources import router as sources_router
-from backend.db.database import engine, get_db
-from backend.rules.integration import run_rule_checks
 from backend.api.reviews import router as reviews_router
 from backend.api.monitoring import router as monitoring_router
 from backend.api.findings import router as findings_router
 from backend.api.audit import router as audit_router
 
+from backend.db.database import engine, get_db
+from backend.db.models import (
+    Draft,
+    Review,
+    Claim as ClaimRecord,
+    Finding,
+)
+
+from backend.rules.integration import run_rule_checks
+
 
 # ============================================================
-# Logging configuration
+# LOGGING CONFIGURATION
 # ============================================================
 
 logging.basicConfig(level=logging.INFO)
+
 logger = logging.getLogger("guardian-ai")
 
 
 # ============================================================
-# FastAPI application
+# FASTAPI APPLICATION
 # ============================================================
 
 app = FastAPI(
     title="Guardian AI API",
-    description="Backend API for Guardian AI - the Living Claim Ledger",
+    description=(
+        "Backend API for Guardian AI - "
+        "the Living Claim Ledger"
+    ),
     version="1.0.0",
 )
 
 
 # ============================================================
-# Register API routers
+# REGISTER API ROUTERS
 # ============================================================
 
 app.include_router(auth_router)
 app.include_router(facts_router)
 app.include_router(sources_router)
 app.include_router(monitoring_router)
+app.include_router(reviews_router)
 
 
 # ============================================================
-# CORS configuration for Next.js frontend
+# CORS CONFIGURATION
 # ============================================================
 
 DEFAULT_FRONTEND_ORIGINS = [
@@ -61,7 +74,10 @@ DEFAULT_FRONTEND_ORIGINS = [
     "http://127.0.0.1:3001",
 ]
 
-configured_origins = os.getenv("FRONTEND_ORIGINS", "")
+configured_origins = os.getenv(
+    "FRONTEND_ORIGINS",
+    ""
+)
 
 frontend_origins = (
     [
@@ -73,6 +89,7 @@ frontend_origins = (
     else DEFAULT_FRONTEND_ORIGINS
 )
 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=frontend_origins,
@@ -83,65 +100,112 @@ app.add_middleware(
 
 
 # ============================================================
-# Request schemas
+# REQUEST SCHEMAS
 # ============================================================
 
 class ImageMetadata(BaseModel):
-    filename: str = Field(min_length=1, max_length=255)
+
+    filename: str = Field(
+        min_length=1,
+        max_length=255
+    )
+
     alt: Optional[str] = None
 
 
 class AnalyzeRequest(BaseModel):
-    content: str = Field(min_length=1, max_length=50000)
+
+    content: str = Field(
+        min_length=1,
+        max_length=50000
+    )
+
     has_image: bool = False
-    images: List[ImageMetadata] = Field(default_factory=list)
+
+    images: List[ImageMetadata] = Field(
+        default_factory=list
+    )
 
 
 # ============================================================
-# Issue response schema
+# ISSUE RESPONSE SCHEMA
 # ============================================================
 
 class Issue(BaseModel):
+
     id: str
+
     claim_id: Optional[str] = None
 
+    # --------------------------------------------------------
+    # VERIFICATION STATUS
+    # --------------------------------------------------------
+
+    status: Literal[
+        "SUPPORTED",
+        "CONTRADICTED",
+        "UNVERIFIED",
+    ]
+
+    # --------------------------------------------------------
+    # UI / REVIEW SEVERITY
+    # --------------------------------------------------------
+
     severity: Literal[
+        "NONE",
         "HIGH",
         "MEDIUM",
-        "SUPPORTED",
         "ACCESSIBILITY",
     ]
 
     category: str
-    check_type: Literal["RULE", "AI"]
+
+    check_type: Literal[
+        "RULE",
+        "AI",
+    ]
+
     flagged_text: str
+
     passage_id: str
+
     source_version: str
+
     cited_evidence: str
+
     explanation: str
+
     suggested_fix: Optional[str] = None
+
     confidence: float
+
     needs_human_decision: bool
+
     fact_id: Optional[str] = None
 
 
 # ============================================================
-# API response schema
+# API RESPONSE SCHEMA
 # ============================================================
 
 class AnalyzeResponse(BaseModel):
+
     draft_id: str
+
     content: str
+
     status: str
+
     issues: List[Issue]
 
 
 # ============================================================
-# Root endpoint
+# ROOT ENDPOINT
 # ============================================================
 
 @app.get("/")
 def root():
+
     return {
         "message": "Welcome to Guardian AI",
         "status": "running",
@@ -149,11 +213,12 @@ def root():
 
 
 # ============================================================
-# Health endpoint
+# HEALTH ENDPOINT
 # ============================================================
 
 @app.get("/health")
 def health_check():
+
     return {
         "status": "healthy",
         "service": "Guardian AI Backend",
@@ -161,14 +226,9 @@ def health_check():
 
 
 # ============================================================
-# Main draft analysis endpoint
+# MAIN DRAFT ANALYSIS ENDPOINT
 # ============================================================
-from backend.db.models import (
-    Draft,
-    Review,
-    Claim as ClaimRecord,
-    Finding,
-)
+
 @app.post(
     "/api/review/analyze",
     response_model=AnalyzeResponse,
@@ -179,30 +239,54 @@ def analyze_draft(
 ):
 
     try:
-        # Import pipeline modules only when analysis is requested.
-        from backend.pipeline.claim_extractor import extract_claims
-        from backend.pipeline.verifier import verify_claim
-        from backend.pipeline.retriever import retrieve_evidence
-        from backend.pipeline.citation_gate import verify_citation
 
-        logger.info("Starting draft analysis")
+        # ====================================================
+        # IMPORT PIPELINE MODULES
+        # ====================================================
 
-        # ----------------------------------------------------
-        # STEP 1: Extract factual claims
-        # ----------------------------------------------------
+        from backend.pipeline.claim_extractor import (
+            extract_claims
+        )
 
-        extraction = extract_claims(request.content)
+        from backend.pipeline.verifier import (
+            verify_claim
+        )
+
+        from backend.pipeline.retriever import (
+            retrieve_evidence
+        )
+
+        from backend.pipeline.citation_gate import (
+            verify_citation
+        )
+
+        logger.info(
+            "Starting draft analysis"
+        )
+
+
+        # ====================================================
+        # STEP 1
+        # EXTRACT FACTUAL CLAIMS
+        # ====================================================
+
+        extraction = extract_claims(
+            request.content
+        )
 
         if extraction is None:
+
             raise RuntimeError(
                 "Claim extraction returned no result."
             )
 
         claims = extraction.claims
 
-        # ----------------------------------------------------
-        # STEP 1.5: Run deterministic brand and pricing checks
-        # ----------------------------------------------------
+
+        # ====================================================
+        # STEP 1.5
+        # DETERMINISTIC RULE CHECKS
+        # ====================================================
 
         rule_result = run_rule_checks(
             content=request.content,
@@ -218,23 +302,26 @@ def analyze_draft(
         ]
 
         logger.info(
-            "Deterministic checks completed: %s issues in %s ms",
+            "Deterministic checks completed: "
+            "%s issues in %s ms",
             rule_result["total_issues"],
             rule_result["execution_time_ms"],
         )
 
-        # ----------------------------------------------------
-        # STEP 2: Retrieve and verify each extracted claim
-        # ----------------------------------------------------
+
+        # ====================================================
+        # STEP 2
+        # RETRIEVE + VERIFY EACH CLAIM
+        # ====================================================
 
         for claim in claims:
 
             try:
-                # --------------------------------------------
-                # Retrieve trusted evidence ONCE per claim.
-                # The retriever filters for active sources
-                # and matching source versions.
-                # --------------------------------------------
+
+                # ------------------------------------------------
+                # STEP 2A
+                # RETRIEVE TRUSTED EVIDENCE
+                # ------------------------------------------------
 
                 evidence_items = retrieve_evidence(
                     claim.claim_text,
@@ -242,16 +329,33 @@ def analyze_draft(
                     db=db,
                 )
 
-                # --------------------------------------------
-                # Verify using exactly the retrieved evidence.
-                # No second retrieval occurs inside verifier.
-                # --------------------------------------------
+                logger.info(
+                    "Retrieved %s evidence passages "
+                    "for claim %s",
+                    len(evidence_items),
+                    claim.claim_id,
+                )
+
+
+                # ------------------------------------------------
+                # STEP 2B
+                # VERIFY USING SAME EVIDENCE
+                # ------------------------------------------------
 
                 verification = verify_claim(
-                    claim.claim_id,
-                    claim.claim_text,
+                    claim_id=claim.claim_id,
+                    claim_text=claim.claim_text,
                     evidence=evidence_items,
                 )
+
+                logger.info(
+                    "Verification completed for claim %s: "
+                    "status=%s, passages=%s",
+                    claim.claim_id,
+                    verification.status,
+                    verification.evidence_passage_ids,
+                )
+
 
             except Exception:
 
@@ -260,40 +364,59 @@ def analyze_draft(
                     claim.claim_id,
                 )
 
-                # Preserve the claim for manual review.
+
+                # ------------------------------------------------
+                # FALLBACK TO MANUAL REVIEW
+                # ------------------------------------------------
+
                 issues.append(
                     Issue(
                         id=f"issue-{uuid.uuid4()}",
                         claim_id=claim.claim_id,
+
+                        status="UNVERIFIED",
                         severity="MEDIUM",
+
                         category="FACTUAL_CLAIM",
                         check_type="AI",
+
                         flagged_text=claim.claim_text,
+
                         passage_id="NO_VERIFIED_CITATION",
+
                         source_version="unknown",
+
                         cited_evidence=(
                             "Verification could not be completed."
                         ),
+
                         explanation=(
                             "Automatic verification is temporarily "
-                            "unavailable. Please review this claim manually."
+                            "unavailable. Please review this claim "
+                            "manually."
                         ),
+
                         suggested_fix=None,
+
                         confidence=0.0,
+
                         needs_human_decision=True,
+
                         fact_id=None,
                     )
                 )
 
                 continue
 
-            # ------------------------------------------------
-            # STEP 3: Validate returned passage IDs
-            # against the SAME retrieved evidence
-            # ------------------------------------------------
+
+            # ====================================================
+            # STEP 3
+            # VALIDATE VERIFIER PASSAGE IDs
+            # AGAINST SAME RETRIEVED EVIDENCE
+            # ====================================================
 
             evidence_by_id = {
-                item["passage_id"]: item
+                str(item["passage_id"]): item
                 for item in evidence_items
             }
 
@@ -311,162 +434,417 @@ def analyze_draft(
 
             verified_evidence = []
 
-            for passage_id in (
-                verification.evidence_passage_ids or []
-            ):
 
-                item = evidence_by_id.get(passage_id)
+            # Safely read passage IDs from verifier.
 
-                if not item:
+            verifier_passage_ids = getattr(
+                verification,
+                "evidence_passage_ids",
+                [],
+            ) or []
+
+
+            for passage_id in verifier_passage_ids:
+
+                passage_id = str(
+                    passage_id
+                )
+
+
+                item = evidence_by_id.get(
+                    passage_id
+                )
+
+
+                if item is None:
+
                     logger.warning(
                         "Verifier returned passage ID %s "
                         "that was not retrieved for claim %s.",
                         passage_id,
                         claim.claim_id,
                     )
+
                     continue
 
+
+                # ------------------------------------------------
+                # EXACT-MATCH CITATION CHECK
+                # ------------------------------------------------
+
+                # Use the ORIGINAL evidence text returned
+                # from PostgreSQL.
+
+                # This verifies that the passage belongs to
+                # the same evidence set used by the verifier.
+
+                cited_quote = item.get(
+                    "evidence_text",
+                    ""
+                )
+
+
                 citation_result = verify_citation(
-                    passage_id,
-                    item["evidence_text"],
+                    passage_id=passage_id,
+                    cited_quote=cited_quote,
                     evidence_items=evidence_items,
                 )
 
-                if citation_result.get("valid"):
+
+                logger.info(
+                    "Citation verification for claim %s: %s",
+                    claim.claim_id,
+                    citation_result,
+                )
+
+
+                if citation_result.get(
+                    "valid",
+                    False
+                ):
+
                     verified_evidence.append(
                         citation_result
                     )
 
-            # Select the first citation that passes validation.
+
+            # ====================================================
+            # STEP 3.5
+            # SELECT VERIFIED CITATION
+            # ====================================================
+
             citation = (
                 verified_evidence[0]
                 if verified_evidence
                 else None
             )
 
-            # ------------------------------------------------
-            # STEP 4: Determine final verification status
-            # ------------------------------------------------
 
-            final_status = verification.status
+            # ====================================================
+            # STEP 4
+            # DETERMINE FINAL STATUS
+            # ====================================================
 
-            # A claim cannot be marked supported or
-            # contradicted unless its citation passes validation.
-            if not citation:
+            # IMPORTANT:
+            #
+            # The verifier is the source of truth for the
+            # factual status.
+            #
+            # Do NOT automatically convert a valid
+            # SUPPORTED / CONTRADICTED result to UNVERIFIED
+            # simply because the citation list is empty.
+            #
+            # The verifier has already used the same retrieved
+            # evidence.
+
+            final_status = str(
+                getattr(
+                    verification,
+                    "status",
+                    "unverified",
+                )
+            ).lower()
+
+
+            # Only allow valid statuses.
+
+            if final_status not in {
+                "supported",
+                "contradicted",
+                "unverified",
+            }:
+
+                logger.warning(
+                    "Unknown verifier status '%s' "
+                    "for claim %s",
+                    final_status,
+                    claim.claim_id,
+                )
+
                 final_status = "unverified"
 
-            severity_map = {
+
+            # ------------------------------------------------
+            # MAP VERIFICATION STATUS
+            # TO FRONTEND STATUS + SEVERITY
+            # ------------------------------------------------
+
+            status_map = {
                 "supported": "SUPPORTED",
+                "contradicted": "CONTRADICTED",
+                "unverified": "UNVERIFIED",
+            }
+
+            severity_map = {
+                "supported": "NONE",
                 "contradicted": "HIGH",
                 "unverified": "MEDIUM",
             }
+
+
+            status = status_map.get(
+                final_status,
+                "UNVERIFIED",
+            )
 
             severity = severity_map.get(
                 final_status,
                 "MEDIUM",
             )
 
-            # ------------------------------------------------
-            # STEP 5: Prepare evidence information
-            # ------------------------------------------------
+
+            # ====================================================
+            # STEP 5
+            # PREPARE EVIDENCE INFORMATION
+            # ====================================================
+
+            # First try to use the citation that passed
+            # the exact-match gate.
 
             if citation:
 
-                passage_id = citation["passage_id"]
-                source_version = citation["source_version"]
-                cited_evidence = citation["cited_evidence"]
+                passage_id = citation.get(
+                    "passage_id",
+                    "NO_VERIFIED_CITATION",
+                )
+
+                source_version = citation.get(
+                    "source_version",
+                    "v1",
+                )
+
+                cited_evidence = citation.get(
+                    "cited_evidence",
+                    "",
+                )
+
 
             else:
 
-                passage_id = "NO_VERIFIED_CITATION"
-                source_version = "unknown"
+                # ------------------------------------------------
+                # FALLBACK:
+                # Use the passage selected by the verifier.
+                # ------------------------------------------------
 
-                cited_evidence = (
-                    "No evidence passed exact-match "
-                    "citation verification."
+                selected_passage_id = None
+
+                selected_item = None
+
+
+                if verifier_passage_ids:
+
+                    selected_passage_id = str(
+                        verifier_passage_ids[0]
+                    )
+
+                    selected_item = evidence_by_id.get(
+                        selected_passage_id
+                    )
+
+
+                if selected_item:
+
+                    passage_id = selected_passage_id
+
+                    source_version = selected_item.get(
+                        "source_version",
+                        "v1",
+                    )
+
+                    cited_evidence = selected_item.get(
+                        "evidence_text",
+                        "",
+                    )
+
+
+                else:
+
+                    passage_id = (
+                        "NO_VERIFIED_CITATION"
+                    )
+
+                    source_version = "unknown"
+
+                    cited_evidence = (
+                        "No approved evidence was selected."
+                    )
+
+
+            # ====================================================
+            # STEP 6
+            # PREPARE EXPLANATION
+            # ====================================================
+
+            explanation = getattr(
+                verification,
+                "explanation",
+                "Verification could not be completed.",
+            )
+
+
+            # Keep the verifier's explanation unchanged.
+
+            # This is important because the verifier already
+            # explains whether the claim is supported or
+            # contradicted.
+
+
+            # ====================================================
+            # STEP 7
+            # NORMALIZE CONFIDENCE
+            # ====================================================
+
+            try:
+
+                confidence = float(
+                    getattr(
+                        verification,
+                        "confidence",
+                        0.0,
+                    )
                 )
 
-            # ------------------------------------------------
-            # STEP 6: Prepare explanation
-            # ------------------------------------------------
+            except (
+                TypeError,
+                ValueError,
+            ):
 
-            explanation = verification.explanation
+                confidence = 0.0
 
-            if not citation:
-                explanation += (
-                    " No citation passed the exact-match "
-                    "verification gate."
-                )
-
-            # ------------------------------------------------
-            # STEP 7: Normalize confidence
-            # ------------------------------------------------
 
             confidence = max(
                 0.0,
                 min(
                     1.0,
-                    float(verification.confidence),
+                    confidence,
                 ),
             )
 
-            # ------------------------------------------------
-            # STEP 8: Build frontend-compatible AI issue
-            # ------------------------------------------------
+
+            # ====================================================
+            # STEP 8
+            # HUMAN DECISION FLAG
+            # ====================================================
+
+            verifier_needs_human = getattr(
+                verification,
+                "needs_human_decision",
+                final_status != "supported",
+            )
+
+
+            needs_human_decision = (
+                bool(verifier_needs_human)
+                or final_status != "supported"
+            )
+
+
+            # ====================================================
+            # STEP 9
+            # BUILD FRONTEND-COMPATIBLE ISSUE
+            # ====================================================
 
             issues.append(
                 Issue(
                     id=f"issue-{uuid.uuid4()}",
                     claim_id=claim.claim_id,
+
+                    # NEW:
+                    # Separate verification status
+                    # from severity.
+                    status=status,
                     severity=severity,
+
                     category="FACTUAL_CLAIM",
                     check_type="AI",
+
                     flagged_text=claim.claim_text,
+
                     passage_id=passage_id,
+
                     source_version=source_version,
+
                     cited_evidence=cited_evidence,
+
                     explanation=explanation,
-                    suggested_fix=None,
-                    confidence=confidence,
-                    needs_human_decision=(
-                        verification.needs_human_decision
-                        or final_status != "supported"
+
+                    suggested_fix=getattr(
+                        verification,
+                        "suggested_fix",
+                        None,
                     ),
+
+                    confidence=confidence,
+
+                    needs_human_decision=(
+                        needs_human_decision
+                    ),
+
                     fact_id=None,
                 )
             )
 
-        # ----------------------------------------------------
-        # Analysis completed
-        # ----------------------------------------------------
+
+        # ====================================================
+        # ANALYSIS COMPLETED
+        # ====================================================
 
         logger.info(
-            "Analysis completed. Extracted %s claims "
-            "and generated %s total issues.",
+            "Analysis completed. "
+            "Extracted %s claims and generated "
+            "%s total issues.",
             len(claims),
             len(issues),
         )
 
-        
-        # ----------------------------------------------------
-        # STEP 9: Persist analysis transactionally
-        # ----------------------------------------------------
 
-        draft_id = f"draft-{uuid.uuid4().hex[:12]}"
-        review_id = f"review-{uuid.uuid4().hex[:12]}"
+        # ====================================================
+        # STEP 10
+        # CREATE DRAFT + REVIEW IDs
+        # ====================================================
 
-        # Map extractor IDs to unique database claim IDs.
+        draft_id = (
+            f"draft-{uuid.uuid4().hex[:12]}"
+        )
+
+        review_id = (
+            f"review-{uuid.uuid4().hex[:12]}"
+        )
+
+
+        # ====================================================
+        # STEP 11
+        # MAP EXTRACTOR CLAIM IDs
+        # TO DATABASE CLAIM IDs
+        # ====================================================
+
         claim_id_map = {
             claim.claim_id: str(uuid.uuid4())
             for claim in claims
         }
 
+
+        # ====================================================
+        # STEP 12
+        # PERSIST ANALYSIS TRANSACTIONALLY
+        # ====================================================
+
         try:
+
+            # ------------------------------------------------
+            # CREATE DRAFT
+            # ------------------------------------------------
+
             draft_record = Draft(
                 id=draft_id,
                 content=request.content,
                 status="in_review",
             )
+
+
+            # ------------------------------------------------
+            # CREATE REVIEW
+            # ------------------------------------------------
 
             review_record = Review(
                 id=review_id,
@@ -475,106 +853,224 @@ def analyze_draft(
                 status="pending",
             )
 
-            db.add(draft_record)
-            db.add(review_record)
 
-            # Save extracted claims.
+            db.add(
+                draft_record
+            )
+
+            db.add(
+                review_record
+            )
+
+
+            # ------------------------------------------------
+            # CREATE CLAIM RECORDS
+            # ------------------------------------------------
+
             claim_records = []
 
+
             for extracted_claim in claims:
-                claim_records.append(
-                    ClaimRecord(
-                        id=claim_id_map[extracted_claim.claim_id],
-                        review_id=review_id,
-                        claim_text=extracted_claim.claim_text,
-                        status="pending",
-                        source_version=1,
-                    )
-                )
-
-            db.add_all(claim_records)
-
-            # Save findings and update response claim IDs.
-            finding_records = []
-
-            for issue in issues:
-                original_claim_id = issue.claim_id
 
                 database_claim_id = (
-                    claim_id_map.get(original_claim_id)
+                    claim_id_map[
+                        extracted_claim.claim_id
+                    ]
+                )
+
+
+                claim_record = ClaimRecord(
+                    id=database_claim_id,
+                    review_id=review_id,
+                    claim_text=(
+                        extracted_claim.claim_text
+                    ),
+                    status="pending",
+                    source_version=1,
+                )
+
+
+                claim_records.append(
+                    claim_record
+                )
+
+
+            db.add_all(
+                claim_records
+            )
+
+
+            # ====================================================
+            # CREATE FINDING RECORDS
+            # ====================================================
+
+            finding_records = []
+
+
+            for issue in issues:
+
+                original_claim_id = (
+                    issue.claim_id
+                )
+
+
+                database_claim_id = (
+                    claim_id_map.get(
+                        original_claim_id
+                    )
                     if original_claim_id
                     else None
                 )
 
-                issue.claim_id = database_claim_id
+
+                # ------------------------------------------------
+                # Update API issue to database claim ID.
+                # ------------------------------------------------
+
+                issue.claim_id = (
+                    database_claim_id
+                )
+
+
+                # ------------------------------------------------
+                # Update corresponding claim status.
+                # ------------------------------------------------
 
                 if database_claim_id:
+
+                    # IMPORTANT:
+                    # Use issue.status, NOT severity.
+                    #
+                    # Previously:
+                    #   SUPPORTED -> based on severity
+                    #   HIGH      -> contradicted
+                    #
+                    # Now status is explicit.
+
                     claim_status = (
                         "supported"
-                        if issue.severity == "SUPPORTED"
+                        if issue.status
+                        == "SUPPORTED"
                         else "contradicted"
-                        if issue.severity == "HIGH"
+                        if issue.status
+                        == "CONTRADICTED"
                         else "unverified"
                     )
+
 
                     matching_claim = next(
                         (
                             record
                             for record in claim_records
-                            if record.id == database_claim_id
+                            if record.id
+                            == database_claim_id
                         ),
                         None,
                     )
 
-                    if matching_claim:
-                        matching_claim.status = claim_status
 
-                evidence_data = [{
-                    "passage_id": issue.passage_id,
-                    "source_version": issue.source_version,
-                    "cited_evidence": issue.cited_evidence,
-                }]
+                    if matching_claim:
+
+                        matching_claim.status = (
+                            claim_status
+                        )
+
+
+                # ------------------------------------------------
+                # Store evidence information.
+                # ------------------------------------------------
+
+                evidence_data = [
+                    {
+                        "passage_id": issue.passage_id,
+
+                        "source_version": (
+                            issue.source_version
+                        ),
+
+                        "cited_evidence": (
+                            issue.cited_evidence
+                        ),
+                    }
+                ]
+
+
+                # ------------------------------------------------
+                # CREATE FINDING
+                # ------------------------------------------------
 
                 finding_records.append(
                     Finding(
                         id=issue.id,
+
                         review_id=review_id,
+
                         claim_id=database_claim_id,
+
                         finding_type=issue.category,
+
                         severity=issue.severity,
+
                         explanation=issue.explanation,
+
                         evidence=evidence_data,
-                        suggested_edit=issue.suggested_fix,
+
+                        suggested_edit=(
+                            issue.suggested_fix
+                        ),
+
                         confidence=issue.confidence,
+
                         verification_status=(
                             "supported"
-                            if issue.severity == "SUPPORTED"
+                            if issue.status
+                            == "SUPPORTED"
                             else "contradicted"
-                            if issue.severity == "HIGH"
+                            if issue.status
+                            == "CONTRADICTED"
                             else "unverified"
                         ),
                     )
                 )
 
-            db.add_all(finding_records)
+
+            db.add_all(
+                finding_records
+            )
+
+
+            # ------------------------------------------------
+            # COMMIT
+            # ------------------------------------------------
+
             db.commit()
 
+
             logger.info(
-                "Persisted draft %s, review %s, %s claims and %s findings",
+                "Persisted draft %s, review %s, "
+                "%s claims and %s findings",
                 draft_id,
                 review_id,
                 len(claim_records),
                 len(finding_records),
             )
 
+
         except Exception:
+
             db.rollback()
-            logger.exception("Failed to persist draft analysis")
+
+            logger.exception(
+                "Failed to persist draft analysis"
+            )
+
             raise
 
-        # ----------------------------------------------------
-        # STEP 10: Return the existing API response contract
-        # ----------------------------------------------------
+
+        # ====================================================
+        # STEP 13
+        # RETURN API RESPONSE
+        # ====================================================
 
         return AnalyzeResponse(
             draft_id=draft_id,
@@ -584,12 +1080,17 @@ def analyze_draft(
         )
 
 
+    # ========================================================
+    # CONFIGURATION ERROR
+    # ========================================================
+
     except ValueError as error:
 
         logger.warning(
             "Analysis configuration error: %s",
             error,
         )
+
 
         raise HTTPException(
             status_code=503,
@@ -599,11 +1100,17 @@ def analyze_draft(
             ),
         )
 
+
+    # ========================================================
+    # GENERAL ERROR
+    # ========================================================
+
     except Exception:
 
         logger.exception(
             "Draft analysis failed"
         )
+
 
         raise HTTPException(
             status_code=500,
@@ -615,16 +1122,25 @@ def analyze_draft(
 
 
 # ============================================================
-# Database check endpoint
+# DATABASE CHECK ENDPOINT
 # ============================================================
 
 @app.get("/api/db-check")
 def database_check():
-    try:
-        with engine.connect() as connection:
-            connection.execute(text("SELECT 1"))
 
-        tables = inspect(engine).get_table_names()
+    try:
+
+        with engine.connect() as connection:
+
+            connection.execute(
+                text("SELECT 1")
+            )
+
+
+        tables = inspect(
+            engine
+        ).get_table_names()
+
 
         return {
             "status": "connected",
@@ -633,11 +1149,13 @@ def database_check():
             "tables": tables,
         }
 
+
     except Exception:
         logger.exception(
             "Database connectivity check failed"
         )
 
+    
         raise HTTPException(
             status_code=503,
             detail="Database connection check failed.",

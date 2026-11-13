@@ -1,63 +1,143 @@
+import logging
 
-def verify_citation(passage_id, cited_quote, evidence_items=None):
+logger = logging.getLogger("guardian-ai")
+
+
+def verify_citation(
+    passage_id,
+    cited_quote,
+    evidence_items=None
+):
     """
-    Verify that a cited passage exists and the quote appears
-    exactly in the original evidence.
+    Verify that:
+    1. The passage ID exists in the retrieved evidence.
+    2. The cited quote exists exactly in that passage.
 
-    If evidence_items are supplied, validate against the same
-    database-retrieved passages used during claim verification.
-
-    Otherwise, use the legacy ChromaDB collection.
+    This function is intentionally deterministic.
+    It does not use Gemini.
     """
 
-    # Database-backed evidence validation.
+    # ============================================================
+    # DATABASE / RETRIEVED EVIDENCE MODE
+    # ============================================================
+
     if evidence_items is not None:
 
         matched_item = next(
             (
-                item for item in evidence_items
-                if item.get("passage_id") == passage_id
+                item
+                for item in evidence_items
+                if str(item.get("passage_id")) == str(passage_id)
             ),
             None
         )
 
         if matched_item is None:
+
+            logger.warning(
+                "Citation failed: passage %s was not found "
+                "in retrieved evidence.",
+                passage_id
+            )
+
             return {
                 "valid": False,
-                "reason": "Passage ID does not exist in the retrieved evidence.",
+                "reason": (
+                    "Passage ID does not exist in the "
+                    "retrieved evidence."
+                ),
                 "passage_id": passage_id
             }
 
-        original_text = matched_item.get("evidence_text", "")
+        original_text = str(
+            matched_item.get("evidence_text", "")
+        )
+
+        cited_quote = str(cited_quote or "")
+
+        # Exact quote verification
+        if not cited_quote.strip():
+
+            return {
+                "valid": False,
+                "reason": "Cited quote is empty.",
+                "passage_id": passage_id
+            }
 
         if cited_quote not in original_text:
+
+            logger.warning(
+                "Citation failed: quote does not exactly "
+                "match passage %s.",
+                passage_id
+            )
+
             return {
                 "valid": False,
-                "reason": "Cited quote does not match the original passage.",
+                "reason": (
+                    "Cited quote does not match the "
+                    "original passage."
+                ),
                 "passage_id": passage_id
             }
+
+        logger.info(
+            "Citation verified successfully for passage %s.",
+            passage_id
+        )
 
         return {
             "valid": True,
             "reason": "Citation verified successfully.",
             "passage_id": passage_id,
-            "source": matched_item.get("source", "Unknown"),
-            "source_version": matched_item.get("source_version", "v1"),
+            "source": matched_item.get(
+                "source",
+                "Unknown"
+            ),
+            "source_version": matched_item.get(
+                "source_version",
+                "v1"
+            ),
             "cited_evidence": cited_quote
         }
 
-    # Legacy ChromaDB fallback.
+    # ============================================================
+    # LEGACY CHROMADB FALLBACK
+    # ============================================================
+
     try:
+
         from .evidence_store import collection
+
     except ImportError:
+
         from evidence_store import collection
 
-    result = collection.get(
-        ids=[passage_id],
-        include=["documents", "metadatas"]
-    )
+    try:
 
-    if not result["ids"]:
+        result = collection.get(
+            ids=[passage_id],
+            include=[
+                "documents",
+                "metadatas"
+            ]
+        )
+
+    except Exception as exc:
+
+        logger.exception(
+            "Legacy citation lookup failed: %s",
+            exc
+        )
+
+        return {
+            "valid": False,
+            "reason": "Unable to retrieve citation passage.",
+            "passage_id": passage_id
+        }
+
+    if not result.get("ids"):
+
         return {
             "valid": False,
             "reason": "Passage ID does not exist.",
@@ -65,12 +145,31 @@ def verify_citation(passage_id, cited_quote, evidence_items=None):
         }
 
     original_text = result["documents"][0]
-    metadata = result["metadatas"][0] or {}
 
-    if cited_quote not in original_text:
+    metadata = (
+        result["metadatas"][0]
+        if result.get("metadatas")
+        else {}
+    )
+
+    cited_quote = str(cited_quote or "")
+
+    if not cited_quote.strip():
+
         return {
             "valid": False,
-            "reason": "Cited quote does not match the original passage.",
+            "reason": "Cited quote is empty.",
+            "passage_id": passage_id
+        }
+
+    if cited_quote not in original_text:
+
+        return {
+            "valid": False,
+            "reason": (
+                "Cited quote does not match the "
+                "original passage."
+            ),
             "passage_id": passage_id
         }
 
@@ -78,38 +177,13 @@ def verify_citation(passage_id, cited_quote, evidence_items=None):
         "valid": True,
         "reason": "Citation verified successfully.",
         "passage_id": passage_id,
-        "source": metadata.get("source", "Unknown"),
-        "source_version": metadata.get("version", "v1"),
+        "source": metadata.get(
+            "source",
+            "Unknown"
+        ),
+        "source_version": metadata.get(
+            "version",
+            "v1"
+        ),
         "cited_evidence": cited_quote
     }
-
-
-if __name__ == "__main__":
-
-    # Test using supplied evidence.
-    sample_evidence = [
-        {
-            "passage_id": "passage_2",
-            "evidence_text": "Orbit subscription plans start at $29 per month.",
-            "source": "test_source.txt",
-            "source_version": "v1"
-        }
-    ]
-
-    print("\nValid Citation Test:")
-    print(
-        verify_citation(
-            "passage_2",
-            "Orbit subscription plans start at $29 per month.",
-            evidence_items=sample_evidence
-        )
-    )
-
-    print("\nInvalid Citation Test:")
-    print(
-        verify_citation(
-            "passage_2",
-            "Orbit plans start at $10 per month.",
-            evidence_items=sample_evidence
-        )
-    )
