@@ -1,9 +1,9 @@
 import "./theme.css";
 import "./globals.css";
-import { Inter, IBM_Plex_Mono } from "next/font/google";
+import { Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import { LedgerProvider } from "@/lib/ledger-store";
 
-const inter = Inter({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
@@ -24,8 +24,8 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.variable} ${ibmPlexMono.variable}`}>
+    <html lang="en" className={`dark ${spaceGrotesk.variable} ${ibmPlexMono.variable}`}>
+      <body className={`${spaceGrotesk.variable} ${ibmPlexMono.variable}`}>
         <LedgerProvider>{children}</LedgerProvider>
       </body>
     </html>

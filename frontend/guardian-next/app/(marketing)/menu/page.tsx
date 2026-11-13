@@ -1,18 +1,16 @@
 ﻿"use client";
+
 import Link from "next/link";
 
-
 export default function MenuPage() {
-
-
   const sections = [
     {
       title: "Core Workspaces",
       tag: "WORKSPACE",
-      color: "#ff6b00",
+      color: "var(--blood)",
       links: [
         {
-          href: "/demo",
+          href: "/analyze",
           name: "Analyze Draft Copy",
           desc: "Run instant deterministic rule checks and extract claims for AI retrieval verification.",
           badge: "Pipeline",
@@ -20,10 +18,10 @@ export default function MenuPage() {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
             </svg>
-          )
+          ),
         },
         {
-          href: "/demo",
+          href: "/review",
           name: "Review Session & Citations",
           desc: "Interactive proof sheet with claim-by-claim citations, confidence meter, and one-click fixes.",
           badge: "Human-in-Loop",
@@ -31,39 +29,90 @@ export default function MenuPage() {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <path d="M12 2l8 3v6c0 5-3.4 8.7-8 11-4.6-2.3-8-6-8-11V5l8-3z" />
             </svg>
-          )
+          ),
+        },
+        {
+          href: "/sources",
+          name: "Sources & Documents",
+          desc: "Search, inspect, and upload approved brand policies, pricing sheets, and benchmark claims.",
+          badge: "Knowledge Base",
+          icon: (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          ),
+        },
+        {
+          href: "/admin",
+          name: "Fact Registry",
+          desc: "Maintain atomic truth values. Update pricing and SLA facts with instant downstream drift alerts.",
+          badge: "Source of Truth",
+          icon: (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14" />
+            </svg>
+          ),
+        },
+        {
+          href: "/ledger",
+          name: "Living Claim Ledger",
+          desc: "Audit trail and post inventory. Highlights pricing drift and stale statements instantly.",
+          badge: "Living Ledger",
+          icon: (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+            </svg>
+          ),
+        },
+        {
+          href: "/analytics",
+          name: "Analytics & Metrics",
+          desc: "Monitor deterministic check throughput, severity distribution, and reviewer accept rates.",
+          badge: "Telemetry",
+          icon: (
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
+          ),
         },
         {
           href: "/login",
           name: "Team Login",
-          desc: "Single source of truth for pricing, claims, and policies. Editing a fact propagates to linked posts.",
+          desc: "Sign in to your team workspace to verify drafts, manage facts, and inspect evidence.",
           badge: "Team Access",
           icon: (
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <circle cx="12" cy="12" r="3" />
               <path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14" />
             </svg>
-          )
+          ),
         },
         {
-          href: "/demo",
-          name: "Living Claim Ledger",
-          desc: "Audit trail and post inventory. Highlights pricing drift and stale statements instantly.",
-          badge: "Sample Ledger",
-          badgeColor: "#ff6b00",
+          href: "/register",
+          name: "Register Account",
+          desc: "Create a new team account or get instant test access to explore the complete platform.",
+          badge: "New User",
+          badgeColor: "#10b981",
           icon: (
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="8.5" cy="7" r="4" />
+              <line x1="20" y1="8" x2="20" y2="14" />
+              <line x1="23" y1="11" x2="17" y2="11" />
             </svg>
-          )
-        }
-      ]
+          ),
+        },
+      ],
     },
     {
       title: "System & Architecture",
       tag: "OVERVIEW",
-      color: "#ff9500",
+      color: "var(--blood)",
       links: [
         {
           href: "/#what",
@@ -75,7 +124,7 @@ export default function MenuPage() {
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
             </svg>
-          )
+          ),
         },
         {
           href: "/#faq",
@@ -88,30 +137,75 @@ export default function MenuPage() {
               <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
               <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
-          )
-        }
-      ]
-    }
+          ),
+        },
+      ],
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-[#000000] text-[#ffffff] px-6 py-12 md:py-20 relative overflow-hidden">
-      {/* Background radial glow */}
-      <div className="absolute top-0 right-1/4 max-w-full w-[600px] h-[600px] bg-[#ff6b00]/10 rounded-full blur-[140px] pointer-events-none overflow-hidden" />
-      <div className="absolute bottom-0 left-1/4 max-w-full w-[500px] h-[500px] bg-[#ff9500]/8 rounded-full blur-[140px] pointer-events-none overflow-hidden" />
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "var(--ink)",
+        color: "var(--t1)",
+        padding: "48px 24px 80px",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Subtle deep red ambient glow behind content */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          right: "20%",
+          width: 600,
+          height: 600,
+          background: "radial-gradient(circle, rgba(176,18,27,0.12) 0%, rgba(58,8,12,0.04) 60%, transparent 80%)",
+          borderRadius: "50%",
+          filter: "blur(120px)",
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: "10%",
+          left: "15%",
+          width: 500,
+          height: 500,
+          background: "radial-gradient(circle, rgba(58,8,12,0.2) 0%, transparent 70%)",
+          borderRadius: "50%",
+          filter: "blur(120px)",
+          pointerEvents: "none",
+        }}
+      />
 
-      <div className="max-w-5xl mx-auto relative z-10 flex flex-col gap-12">
+      <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 10, display: "flex", flexDirection: "column", gap: 48 }}>
         {/* Top Header */}
-        <div className="flex items-center justify-between border-b border-[#ff6b00]/20 pb-6">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#d44a00] to-[#ff6b00] flex items-center justify-center font-bold text-lg text-white shadow-[0_0_20px_rgba(255,107,0,0.4)] group-hover:scale-105 transition-transform">
-              G
-            </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            borderBottom: "1px solid var(--line)",
+            paddingBottom: 24,
+            flexWrap: "wrap",
+            gap: 16,
+          }}
+        >
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
+            <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <path d="M16 2L4 7v9c0 6.6 5.1 12.8 12 14.3C22.9 28.8 28 22.6 28 16V7L16 2z" fill="#B0121B" />
+              <path d="M16 2L4 7v9c0 6.6 5.1 12.8 12 14.3C22.9 28.8 28 22.6 28 16V7L16 2z" stroke="#F2675F" strokeWidth="0.5" fill="none" opacity="0.4" />
+              <path d="M11 16l3.5 3.5L21 12" stroke="#F7ECE8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
             <div>
-              <div className="text-sm font-extrabold tracking-wider text-white">
-                GUARDIAN <span className="text-[#ff6b00]">AI</span>
+              <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--t1)" }}>
+                Guardian<span style={{ color: "var(--blood)", fontWeight: 400 }}> AI</span>
               </div>
-              <div className="text-[10px] text-[#a1a1aa] tracking-widest font-mono">
+              <div style={{ fontSize: 11, color: "var(--t3)", fontFamily: "var(--mono)", letterSpacing: "0.1em" }}>
                 NAVIGATION DIRECTORY
               </div>
             </div>
@@ -119,7 +213,16 @@ export default function MenuPage() {
 
           <Link
             href="/"
-            className="btn text-xs font-semibold px-4 py-2 h-auto flex items-center gap-2 border border-[#ff6b00]/30 text-[#ff6b00] hover:bg-[#ff6b00]/10"
+            className="pill ghost"
+            style={{
+              height: 38,
+              padding: "0 18px",
+              fontSize: 13,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              fontFamily: "var(--mono)",
+            }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <line x1="19" y1="12" x2="5" y2="12" />
@@ -131,46 +234,99 @@ export default function MenuPage() {
 
         {/* Hero Title */}
         <div>
-          <span className="text-xs uppercase font-mono tracking-widest text-[#ff9500] font-bold">
-            Application Index & Shortcuts
+          <span style={{ fontSize: 12, textTransform: "uppercase", fontFamily: "var(--mono)", letterSpacing: "0.14em", color: "var(--redhi)", fontWeight: 600 }}>
+            Application Index &amp; Shortcuts
           </span>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mt-2 font-[family-name:var(--font-display)]">
+          <h1 style={{ fontSize: "clamp(34px, 5vw, 48px)", fontWeight: 700, letterSpacing: "-0.03em", color: "var(--t1)", margin: "8px 0 10px" }}>
             Platform Menu
           </h1>
-          <p className="text-[#a1a1aa] text-base mt-2 max-w-xl">
+          <p style={{ color: "var(--t2)", fontSize: 16.5, margin: 0, maxWidth: 640, lineHeight: 1.6 }}>
             Direct access to all verification interfaces, fact management registries, and living claim audit records.
           </p>
         </div>
 
         {/* Section Groups */}
-        <div className="flex flex-col gap-10">
+        <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
           {sections.map((sec) => (
-            <div key={sec.title} className="flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-mono font-bold tracking-widest text-[#ff6b00] uppercase px-2.5 py-0.5 rounded bg-[#ff6b00]/10 border border-[#ff6b00]/25">
+            <div key={sec.title} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontFamily: "var(--mono)",
+                    fontWeight: 700,
+                    letterSpacing: "0.12em",
+                    color: "var(--redhi)",
+                    textTransform: "uppercase",
+                    padding: "3px 10px",
+                    borderRadius: 6,
+                    background: "rgba(176,18,27,0.15)",
+                    border: "1px solid rgba(176,18,27,0.35)",
+                  }}
+                >
                   {sec.tag}
                 </span>
-                <h2 className="text-xl font-bold text-white">{sec.title}</h2>
+                <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--t1)", margin: 0 }}>
+                  {sec.title}
+                </h2>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 18 }}>
                 {sec.links.map((link) => (
                   <Link
                     key={link.name}
                     href={link.href}
-                    className="panel p-6 flex flex-col justify-between gap-5 border border-[#ff6b00]/15 hover:border-[#ff6b00] hover:shadow-[0_12px_40px_rgba(255,107,0,0.18)] group transition-all duration-200 rounded-2xl bg-[#0c0c0e]"
+                    style={{
+                      background: "var(--s1)",
+                      border: "1px solid var(--line)",
+                      borderRadius: 20,
+                      padding: 24,
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      gap: 20,
+                      textDecoration: "none",
+                      transition: "border-color 0.2s var(--ease), transform 0.2s var(--ease), box-shadow 0.2s var(--ease)",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = "rgba(242, 103, 95, 0.55)";
+                      e.currentTarget.style.transform = "translateY(-3px)";
+                      e.currentTarget.style.boxShadow = "0 12px 32px rgba(176, 18, 27, 0.25)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = "var(--line)";
+                      e.currentTarget.style.transform = "none";
+                      e.currentTarget.style.boxShadow = "none";
+                    }}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-[#17171a] border border-[#ff6b00]/20 flex items-center justify-center text-[#ff6b00] group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(255,107,0,0.45)] transition-all">
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                      <div
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 12,
+                          background: "var(--s2)",
+                          border: "1px solid var(--line)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "var(--redhi)",
+                        }}
+                      >
                         {link.icon}
                       </div>
                       <span
-                        className="text-xs px-2.5 py-1 rounded-full font-mono font-semibold"
                         style={{
-                          backgroundColor: link.badgeColor ? `${link.badgeColor}15` : "rgba(255,107,0,0.12)",
-                          borderColor: link.badgeColor ? `${link.badgeColor}40` : "rgba(255,107,0,0.3)",
-                          color: link.badgeColor || "#ff6b00",
+                          fontSize: 11,
+                          padding: "3px 10px",
+                          borderRadius: 999,
+                          fontFamily: "var(--mono)",
+                          fontWeight: 600,
+                          backgroundColor: link.badgeColor ? `${link.badgeColor}20` : "rgba(176,18,27,0.15)",
+                          borderColor: link.badgeColor ? `${link.badgeColor}40` : "rgba(176,18,27,0.35)",
+                          color: link.badgeColor || "var(--redhi)",
                           borderWidth: 1,
+                          borderStyle: "solid",
                         }}
                       >
                         {link.badge}
@@ -178,13 +334,10 @@ export default function MenuPage() {
                     </div>
 
                     <div>
-                      <h3 className="text-lg font-bold text-white group-hover:text-[#ff6b00] transition-colors flex items-center gap-2">
+                      <h3 style={{ fontSize: 18, fontWeight: 700, color: "var(--t1)", margin: "0 0 6px" }}>
                         {link.name}
-                        <span className="text-xs text-[#ff6b00] opacity-0 group-hover:opacity-100 transition-opacity">
-                          â†’
-                        </span>
                       </h3>
-                      <p className="text-sm text-[#a1a1aa] mt-1.5 leading-relaxed">
+                      <p style={{ fontSize: 14, color: "var(--t2)", margin: 0, lineHeight: 1.6 }}>
                         {link.desc}
                       </p>
                     </div>
@@ -196,19 +349,31 @@ export default function MenuPage() {
         </div>
 
         {/* Quick Launch CTA Banner */}
-        <div className="p-8 rounded-2xl bg-gradient-to-r from-[#d44a00]/20 via-[#0c0c0e] to-[#ff9500]/10 border border-[#ff6b00]/30 flex flex-wrap items-center justify-between gap-6 shadow-[0_0_50px_rgba(255,107,0,0.12)]">
+        <div
+          style={{
+            padding: 32,
+            borderRadius: 20,
+            background: "var(--s1)",
+            border: "1px solid rgba(176,18,27,0.35)",
+            boxShadow: "0 0 40px rgba(176,18,27,0.15)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 24,
+            flexWrap: "wrap",
+          }}
+        >
           <div>
-            <h3 className="text-xl font-bold text-white">Ready to verify marketing copy?</h3>
-            <p className="text-sm text-[#a1a1aa] mt-1">
+            <h3 style={{ fontSize: 20, fontWeight: 700, color: "var(--t1)", margin: "0 0 6px" }}>
+              Ready to verify marketing copy?
+            </h3>
+            <p style={{ fontSize: 14.5, color: "var(--t2)", margin: 0 }}>
               Start with sample draft copy to experience deterministic rule checks and evidence verifications.
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/demo"
-              className="btn btn-primary px-6 py-2.5 h-auto text-sm font-bold shadow-[0_0_20px_rgba(255,107,0,0.4)]"
-            >
-              Explore Public Demo →
+          <div>
+            <Link href="/analyze" className="pill red" style={{ height: 42, padding: "0 22px", fontSize: 14 }}>
+              Start Instant Test →
             </Link>
           </div>
         </div>

@@ -155,35 +155,36 @@ export default function Shell({
           align-items: center;
           justify-content: center;
           gap: 8px;
-          height: 38px;
-          padding: 0 16px;
+          height: 42px;
+          padding: 0 20px;
           border-radius: 999px;
-          font-size: 13.5px;
-          font-weight: 500;
+          font-size: 15.5px;
+          font-weight: 600;
           color: var(--t2);
           text-decoration: none;
           border: 1px solid var(--line);
           transition: background-color 0.15s var(--ease), border-color 0.15s var(--ease), color 0.15s var(--ease);
           white-space: nowrap;
+          flex-shrink: 0;
         }
 
         .top-nav-tab:hover {
           color: var(--t1);
-          border-color: var(--t3);
-          background: rgba(255, 226, 220, 0.05);
+          border-color: rgba(242, 103, 95, 0.45);
+          background: rgba(255, 226, 220, 0.06);
         }
 
         .top-nav-tab.active {
           color: #ffffff;
           background: var(--blood);
           border-color: var(--blood);
+          box-shadow: 0 2px 14px rgba(176, 18, 27, 0.4);
         }
 
         .top-search-wrap {
           position: relative;
-          width: 240px;
-          flex-shrink: 1;
-          min-width: 150px;
+          width: 200px;
+          flex-shrink: 0;
         }
 
         .top-search-wrap input {
@@ -191,7 +192,7 @@ export default function Shell({
           background: var(--s1);
           border: 1px solid var(--line);
           border-radius: 999px;
-          padding: 8px 44px 8px 34px;
+          padding: 8px 58px 8px 34px;
           font-size: 13px;
           color: var(--t1);
           outline: none;
@@ -274,6 +275,8 @@ export default function Shell({
           gap: 8px;
           overflow-x: auto;
           scrollbar-width: none;
+          flex-shrink: 0;
+          min-width: 0;
         }
 
         .shell-nav-scroll::-webkit-scrollbar {
@@ -422,12 +425,12 @@ export default function Shell({
                 flexShrink: 0,
               }}
             >
-              <svg width="24" height="24" viewBox="0 0 20 20" aria-hidden="true">
-                <rect x="2" y="3" width="9" height="3" rx="1.5" fill="#e0343c" />
-                <rect x="2" y="8.5" width="16" height="3" rx="1.5" fill="#f7ece8" />
-                <rect x="2" y="14" width="12" height="3" rx="1.5" fill="#f7ece8" opacity=".5" />
+              <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                <path d="M16 2L4 7v9c0 6.6 5.1 12.8 12 14.3C22.9 28.8 28 22.6 28 16V7L16 2z" fill="#B0121B"/>
+                <path d="M16 2L4 7v9c0 6.6 5.1 12.8 12 14.3C22.9 28.8 28 22.6 28 16V7L16 2z" stroke="#F2675F" strokeWidth="0.5" fill="none" opacity="0.4"/>
+                <path d="M11 16l3.5 3.5L21 12" stroke="#F7ECE8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <span>Guardian AI</span>
+              <span style={{ fontWeight: 700, letterSpacing: "-0.02em" }}>Guardian<span style={{ color: "var(--blood)", fontWeight: 400 }}> AI</span></span>
             </Link>
 
             {/* Divider */}
@@ -522,7 +525,7 @@ export default function Shell({
                 ref={searchInputRef}
                 type="search"
                 aria-label="Search workspace"
-                placeholder="Search (⌘K)..."
+                placeholder="Search (Ctrl+K)..."
                 value={search}
                 onFocus={() => setSearchOpen(true)}
                 onChange={(e) => {
@@ -537,17 +540,17 @@ export default function Shell({
                   right: 10,
                   top: "50%",
                   transform: "translateY(-50%)",
-                  fontSize: 11,
+                  fontSize: 10.5,
                   fontFamily: "var(--mono)",
                   color: "var(--t3)",
-                  padding: "1px 5px",
+                  padding: "1px 6px",
                   borderRadius: 4,
                   background: "rgba(255,255,255,0.06)",
                   border: "1px solid var(--line)",
                   pointerEvents: "none",
                 }}
               >
-                ⌘K
+                Ctrl+K
               </span>
 
               {/* Live Search Dropdown */}
@@ -670,96 +673,120 @@ export default function Shell({
               )}
             </div>
 
-            {/* Stale Alert */}
+            {/* Stale Alert (compact) */}
             {staleCount > 0 && (
               <Link
                 href="/ledger"
                 className="shell-stale-alert"
                 role="status"
+                title={`${staleCount} stale posts require attention`}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: 6,
-                  height: 38,
-                  padding: "0 12px",
+                  height: 36,
+                  padding: "0 10px",
                   background: "rgba(242, 103, 95, 0.12)",
                   border: "1px solid var(--redhi)",
                   borderRadius: 999,
-                  fontSize: 12,
-                  fontWeight: 500,
+                  fontSize: 11.5,
+                  fontWeight: 600,
                   color: "var(--redhi)",
                   whiteSpace: "nowrap",
                   textDecoration: "none",
                   fontFamily: "var(--mono)",
+                  flexShrink: 0,
                 }}
               >
-                {Ico.warn()}
+                {Ico.warn(12)}
                 {staleCount} stale
               </Link>
             )}
 
-            {/* Ledger Statistics */}
-            <div
-              className="shell-stats"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                height: 38,
-                padding: "0 14px",
-                borderRadius: 999,
-                background: "var(--s1)",
-                border: "1px solid var(--line)",
-                fontFamily: "var(--mono)",
-              }}
-            >
-              <div style={{ textAlign: "center", fontSize: 12 }}>
-                <span style={{ fontWeight: 500, color: "var(--t1)" }}>
-                  {facts.length}
-                </span>{" "}
-                <span style={{ fontSize: 10, color: "var(--t3)" }}>
-                  FACTS
-                </span>
-              </div>
-
-              <span style={{ color: "var(--t3)", opacity: 0.4 }}>•</span>
-
-              <div style={{ textAlign: "center", fontSize: 12 }}>
-                <span style={{ fontWeight: 500, color: "var(--t1)" }}>
-                  {posts.length}
-                </span>{" "}
-                <span style={{ fontSize: 10, color: "var(--t3)" }}>
-                  POSTS
-                </span>
-              </div>
-
-              <span style={{ color: "var(--t3)", opacity: 0.4 }}>•</span>
-
-              <div style={{ textAlign: "center", fontSize: 12 }}>
+            {/* User Profile + Logout (Clean & Compact) */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 7,
+                  height: 36,
+                  padding: "0 12px",
+                  borderRadius: 999,
+                  background: "var(--s1)",
+                  border: "1px solid var(--line)",
+                  fontSize: 12.5,
+                  color: "var(--t1)",
+                  fontFamily: "var(--mono)",
+                  whiteSpace: "nowrap",
+                }}
+              >
                 <span
                   style={{
-                    fontWeight: 500,
-                    color: staleCount > 0 ? "var(--yellow)" : "var(--t3)",
+                    width: 18,
+                    height: 18,
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg, #8c0e15, #b0121b)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: "#fff",
                   }}
                 >
-                  {staleCount}
-                </span>{" "}
-                <span style={{ fontSize: 10, color: "var(--t3)" }}>
-                  STALE
+                  U
                 </span>
+                <span>Team</span>
               </div>
-            </div>
 
-            {/* Home Navigation */}
-            <Link
-              href="/"
-              className="home-btn"
-              title="Return to home"
-              aria-label="Return to home"
-            >
-              {Ico.home()}
-              <span className="shell-profile">Home</span>
-            </Link>
+              <button
+                type="button"
+                title="Sign out"
+                onClick={() => {
+                  localStorage.removeItem("guardian_token");
+                  window.location.href = "/login";
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: 36,
+                  width: 36,
+                  borderRadius: 999,
+                  background: "transparent",
+                  border: "1px solid var(--line)",
+                  color: "var(--t3)",
+                  cursor: "pointer",
+                  transition: "border-color 0.15s, color 0.15s",
+                  flexShrink: 0,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "var(--redhi)";
+                  e.currentTarget.style.color = "var(--redhi)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "var(--line)";
+                  e.currentTarget.style.color = "var(--t3)";
+                }}
+                aria-label="Sign out"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+              </button>
+            </div>
           </div>
         </header>
 

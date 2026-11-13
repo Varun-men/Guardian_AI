@@ -11,7 +11,7 @@
   --t2: #cdb9b3;
   --t3: #9b8780;
   --yellow: #f5b82e;
-  --orange: #ec7a1c;
+  --orange: #f2675f;
   --redhi: #f2675f;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
@@ -27,7 +27,7 @@
   --neon: var(--blood);
   --yellow-soft: rgba(245, 184, 46, 0.14);
   --high: var(--redhi);
-  --medium: var(--orange);
+  --medium: #f87171;
   --ok: #10b981;
   --a11y: var(--t2);
 }
@@ -35,9 +35,9 @@
 html, body {
   background: var(--ink);
   color: var(--t1);
-  font-family: var(--font-sans), var(--sans), system-ui, sans-serif;
-  font-size: 15px;
-  line-height: 1.6;
+  font-family: var(--font-sans), "Space Grotesk", system-ui, -apple-system, sans-serif;
+  font-size: 17px;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -141,7 +141,7 @@ html, body {
 }
 
 .dot.o {
-  background: var(--orange);
+  background: var(--redhi);
 }
 
 .dot.g {

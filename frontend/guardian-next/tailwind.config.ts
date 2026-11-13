@@ -23,7 +23,7 @@ const config: Config = {
         deep: "#3A080C",
         redhi: "#F2675F",
         yellow: "#F5B82E",
-        orange: "#EC7A1C",
+        orange: "#F2675F",
       },
       fontFamily: {
         sans: ["var(--font-space-grotesk)", "Space Grotesk", "system-ui", "-apple-system", "sans-serif"],

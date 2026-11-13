@@ -59,22 +59,27 @@ export default function LedgerPage() {
         }}
       >
         <div>
-          <p className="kick" style={{ margin: "0 0 10px" }}>
-            Append-only verification
-          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+            <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <path d="M16 2L4 7v9c0 6.6 5.1 12.8 12 14.3C22.9 28.8 28 22.6 28 16V7L16 2z" fill="#B0121B"/>
+              <path d="M11 16l3.5 3.5L21 12" stroke="#F7ECE8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span style={{ fontFamily: "var(--mono)", fontSize: 12, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--t3)", fontWeight: 600 }}>Append-only verification</span>
+          </div>
           <h1
             style={{
-              fontSize: "clamp(32px, 4.5vw, 48px)",
-              fontWeight: 500,
+              fontSize: "clamp(32px, 4.5vw, 46px)",
+              fontWeight: 700,
               lineHeight: 1.1,
-              letterSpacing: "-0.03em",
-              margin: "0 0 8px",
+              letterSpacing: "-0.035em",
+              margin: "0 0 10px",
+              color: "var(--t1)",
             }}
           >
             Living Claim Ledger
           </h1>
 
-          <p style={{ color: "var(--t2)", fontSize: 15, maxWidth: 640, margin: 0, lineHeight: 1.6 }}>
+          <p style={{ color: "var(--t2)", fontSize: "16.5px", maxWidth: 620, margin: 0, lineHeight: 1.65 }}>
             Approved claims remain linked to verified facts. Changing an upstream fact in the
             Registry flags every downstream post in real time.
           </p>
@@ -210,7 +215,7 @@ export default function LedgerPage() {
                 width: 8,
                 height: 8,
                 borderRadius: "50%",
-                background: "var(--orange)",
+                background: "var(--yellow)",
                 flexShrink: 0,
               }}
             />
@@ -366,8 +371,8 @@ export default function LedgerPage() {
               padding: "1px 6px",
               borderRadius: 999,
               fontSize: 11,
-              background: filter === "unverified" ? "rgba(255,255,255,0.2)" : "rgba(236, 122, 28, 0.15)",
-              color: filter === "unverified" ? "#fff" : "var(--orange)",
+              background: filter === "unverified" ? "rgba(255,255,255,0.2)" : "rgba(176, 18, 27, 0.2)",
+              color: filter === "unverified" ? "#fff" : "var(--redhi)",
             }}
           >
             {unverifiedCount}
@@ -542,7 +547,7 @@ export default function LedgerPage() {
                       gap: 8,
                     }}
                   >
-                    <span className="d o" />
+                    <span className="d" style={{ background: "var(--redhi)" }} />
                     Reviewer approved this post, but it has no valid linked supporting fact in the registry.
                   </div>
                 )}

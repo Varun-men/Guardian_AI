@@ -1,4 +1,4 @@
-
+﻿
 "use client";
 
 import Link from "next/link";
@@ -14,9 +14,9 @@ export default function ReviewPage() {
 
   if (!analysis) {
     return (
-      <div className="panel p-8 max-w-xl flex flex-col gap-4 border border-[#ff6b00]/25">
+      <div className="panel p-8 max-w-xl flex flex-col gap-4 border border-[var(--blood)]/25">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#ff6b00]/10 border border-[#ff6b00]/30 flex items-center justify-center text-[#ff6b00]">
+          <div className="w-10 h-10 rounded-xl bg-[var(--blood)]/10 border border-[var(--blood)]/30 flex items-center justify-center text-[var(--blood)]">
             <svg
               width="20"
               height="20"
@@ -48,8 +48,8 @@ export default function ReviewPage() {
             onClick={() => setAnalysis(mockAnalyze)}
             className="btn"
             style={{
-              color: "#ff9500",
-              borderColor: "rgba(255,149,0,0.35)",
+              color: "var(--redhi)",
+              borderColor: "rgba(176,18,27,0.4)",
             }}
           >
             Load sample demo draft
@@ -570,45 +570,52 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
   return (
     <div className="flex flex-col gap-6 max-w-7xl">
       {/* Top Header & Primary Status */}
-      <header className="flex flex-wrap items-end justify-between gap-4">
+      <header className="flex flex-wrap items-end justify-between gap-4" style={{ marginBottom: 16 }}>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white font-[family-name:var(--font-display)]">
-            Review Draft & Proof Sheet
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+            <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <path d="M16 2L4 7v9c0 6.6 5.1 12.8 12 14.3C22.9 28.8 28 22.6 28 16V7L16 2z" fill="#B0121B"/>
+              <path d="M11 16l3.5 3.5L21 12" stroke="#F7ECE8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span style={{ fontFamily: "var(--mono)", fontSize: 12, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--t3)", fontWeight: 600 }}>Citation gate</span>
+          </div>
+          <h1 style={{ fontSize: "clamp(32px, 4.5vw, 46px)", fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.035em", margin: "0 0 10px", color: "var(--t1)" }}>
+            Review Draft &amp; Proof Sheet
           </h1>
 
-          <p className="text-sm text-[#a1a1aa] mt-1 flex items-center gap-2 flex-wrap">
+          <p className="text-sm text-[var(--t2)] mt-1.5 flex items-center gap-2 flex-wrap">
             <span>{issues.length} total findings</span>
-            <span className="text-[#71717a]">â€¢</span>
+            <span className="text-[#71717a]">·</span>
 
             <span
               className={
                 pending > 0
-                  ? "text-[#ff9500] font-semibold"
+                  ? "text-[var(--redhi)] font-semibold"
                   : "text-[#10b981] font-semibold"
               }
             >
               {pending > 0
                 ? `${pending} decision required`
-                : "All decisions complete âœ“"}
+                : "All decisions complete"}
             </span>
 
-            <span className="text-[#71717a]">â€¢</span>
+            <span className="text-[#71717a]">·</span>
 
-            <span className="text-xs text-[#a1a1aa]">
+            <span className="text-sm text-[var(--t3)]">
               Keyboard:{" "}
-              <kbd className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-[11px]">
+              <kbd className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-xs">
                 J
               </kbd>
               /
-              <kbd className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-[11px]">
+              <kbd className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-xs">
                 K
               </kbd>{" "}
               navigate,{" "}
-              <kbd className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-[11px]">
+              <kbd className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-xs">
                 A
               </kbd>{" "}
               apply,{" "}
-              <kbd className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-[11px]">
+              <kbd className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-xs">
                 D
               </kbd>{" "}
               dismiss
@@ -622,11 +629,11 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
             onClick={copyCleanText}
             className="btn"
             style={{
-              borderColor: copied ? "#10b981" : "rgba(255,107,0,0.3)",
+              borderColor: copied ? "#10b981" : "rgba(176,18,27,0.3)",
               color: copied ? "#10b981" : "#ffffff",
               background: copied
                 ? "rgba(16,185,129,0.12)"
-                : "rgba(255,107,0,0.06)",
+                : "rgba(176,18,27,0.06)",
             }}
           >
             {copied ? (
@@ -641,7 +648,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
                 >
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-                âœ“ Copied to Clipboard
+                Copied to Clipboard
               </>
             ) : (
               <>
@@ -673,13 +680,12 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
               href="/ledger"
               className="btn btn-primary"
               style={{
-                background:
-                  "linear-gradient(135deg, #d44a00 0%, #ff6b00 100%)",
+                background: "var(--blood)",
                 color: "#ffffff",
-                boxShadow: "0 0 20px rgba(255,107,0,0.45)",
+                boxShadow: "0 0 20px rgba(176,18,27,0.45)",
               }}
             >
-              Approved âœ“ Open Living Ledger
+              Approved · Open Living Ledger
             </Link>
           ) : (
             <button
@@ -696,7 +702,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
               {saving
                 ? "Saving..."
                 : isDemo
-                  ? "Demo â€” Approval Disabled"
+                  ? "Demo · Approval disabled"
                   : approved
                     ? "Post Approved"
                     : !decisionsLoaded
@@ -708,9 +714,9 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
       </header>
 
       {/* Batch Operations Toolbar */}
-      <div className="panel p-3.5 flex flex-wrap items-center justify-between gap-3 border border-[#ff6b00]/20 bg-[#ff6b00]/5 rounded-xl">
+      <div className="panel p-3.5 flex flex-wrap items-center justify-between gap-3 border border-[var(--blood)]/20 bg-[var(--blood)]/5 rounded-xl">
         <div className="flex items-center gap-2 text-xs font-mono text-[#a1a1aa]">
-          <span className="w-2 h-2 rounded-full bg-[#ff6b00]" />
+          <span className="w-2 h-2 rounded-full bg-[var(--blood)]" />
           <span className="font-bold text-white uppercase tracking-wider">
             Quick Actions:
           </span>
@@ -724,9 +730,9 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
             type="button"
             onClick={() => void applyAllSafeFixes()}
             disabled={saving}
-            className="btn text-xs px-3 py-1.5 h-auto font-semibold border-[#ff6b00]/30 hover:border-[#ff6b00] text-[#ff6b00]"
+            className="btn text-xs px-3 py-1.5 h-auto font-semibold border-[var(--blood)]/30 hover:border-[var(--blood)] text-[var(--blood)]"
           >
-            âš¡ Accept All Safe Fixes
+            Accept All Safe Fixes
           </button>
 
           <button
@@ -743,14 +749,14 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
       {actionError && (
         <div
           role="status"
-          className="rounded-lg border border-[#ff9500]/40 bg-[#ff9500]/10 p-3 text-sm text-[#ff9500] flex items-center justify-between"
+          className="rounded-lg border border-[var(--redhi)]/35 bg-[rgba(176,18,27,0.14)] p-3 text-sm text-[var(--t1)] flex items-center justify-between"
         >
           <span>{actionError}</span>
 
           <button
             type="button"
             onClick={() => setActionError(null)}
-            className="text-xs text-[#ff9500] hover:underline"
+            className="text-xs text-[var(--redhi)] hover:underline font-mono"
           >
             Dismiss
           </button>
@@ -761,19 +767,19 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1.15fr)]">
         {/* Left Column: Draft Review / Diff Sheet */}
         <section
-          className="panel p-6 flex flex-col gap-5 h-fit border border-[#ff6b00]/18 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+          className="panel p-6 flex flex-col gap-5 h-fit border border-[var(--blood)]/18 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
           aria-label="Draft"
         >
           {/* View Mode Selector Tabs */}
-          <div className="flex items-center justify-between border-b border-[#ff6b00]/15 pb-3 flex-wrap gap-2">
-            <div className="flex items-center gap-1.5 bg-black/40 p-1 rounded-lg border border-white/5">
+          <div className="flex items-center justify-between border-b border-[var(--blood)]/15 pb-3 flex-wrap gap-2">
+            <div className="flex items-center gap-1.5 bg-black/40 p-1.5 rounded-xl border border-white/5">
               <button
                 type="button"
                 onClick={() => setViewMode("proof")}
-                className={`px-3 py-1 rounded text-xs font-bold transition-all ${
+                className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${
                   viewMode === "proof"
-                    ? "bg-[#ff6b00] text-black shadow-[0_0_10px_rgba(255,107,0,0.35)]"
-                    : "text-[#a1a1aa] hover:text-white"
+                    ? "bg-[var(--blood)] text-white shadow-[0_2px_12px_rgba(176,18,27,0.45)]"
+                    : "text-[var(--t2)] hover:text-white"
                 }`}
               >
                 Proof Sheet
@@ -782,16 +788,16 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
               <button
                 type="button"
                 onClick={() => setViewMode("diff")}
-                className={`px-3 py-1 rounded text-xs font-bold transition-all flex items-center gap-1.5 ${
+                className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${
                   viewMode === "diff"
-                    ? "bg-[#ff6b00] text-black shadow-[0_0_10px_rgba(255,107,0,0.35)]"
-                    : "text-[#a1a1aa] hover:text-white"
+                    ? "bg-[var(--blood)] text-white shadow-[0_2px_12px_rgba(176,18,27,0.45)]"
+                    : "text-[var(--t2)] hover:text-white"
                 }`}
               >
                 <span>Visual Diff</span>
 
                 {appliedDeltas.length > 0 && (
-                  <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black text-[#ff6b00]">
+                  <span className="px-1.5 py-0.5 rounded-full text-[11px] bg-black/60 text-white font-mono">
                     {appliedDeltas.length}
                   </span>
                 )}
@@ -800,10 +806,10 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
               <button
                 type="button"
                 onClick={() => setViewMode("clean")}
-                className={`px-3 py-1 rounded text-xs font-bold transition-all ${
+                className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${
                   viewMode === "clean"
-                    ? "bg-[#ff6b00] text-black shadow-[0_0_10px_rgba(255,107,0,0.35)]"
-                    : "text-[#a1a1aa] hover:text-white"
+                    ? "bg-[var(--blood)] text-white shadow-[0_2px_12px_rgba(176,18,27,0.45)]"
+                    : "text-[var(--t2)] hover:text-white"
                 }`}
               >
                 Clean Copy
@@ -811,7 +817,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
             </div>
 
             <span className="text-xs text-[#71717a] font-mono">
-              {content.split(/\s+/).filter(Boolean).length} words Â·{" "}
+              {content.split(/\s+/).filter(Boolean).length} words ·{" "}
               {content.length} chars
             </span>
           </div>
@@ -827,7 +833,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
                       role="button"
                       className={`claim tone-${segment.issue.severity.toLowerCase()} ${
                         active === segment.issue.id
-                          ? "active ring-2 ring-[#ff6b00]/70 px-1 py-0.5 rounded"
+                          ? "active ring-2 ring-[var(--blood)]/70 px-1 py-0.5 rounded"
                           : ""
                       }`}
                       onClick={() => setActive(segment.issue!.id)}
@@ -876,7 +882,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
               ) : (
                 <div className="flex flex-col gap-4">
                   <div className="p-4 rounded-xl bg-black/40 border border-white/5 text-sm leading-relaxed">
-                    <div className="text-xs font-mono font-bold uppercase text-[#ff6b00] mb-2">
+                    <div className="text-xs font-mono font-bold uppercase text-[var(--blood)] mb-2">
                       Inline Delta Highlights:
                     </div>
 
@@ -888,7 +894,7 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
                         >
                           <div className="flex items-center gap-2">
                             <span className="text-red-400 font-bold">
-                              âˆ’ BEFORE:
+                              - BEFORE:
                             </span>
 
                             <del className="line-through text-red-300 bg-red-950/40 px-1.5 py-0.5 rounded border border-red-500/20">
@@ -937,9 +943,9 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
                 <button
                   type="button"
                   onClick={copyCleanText}
-                  className="text-[#ff6b00] hover:underline font-bold"
+                  className="text-[var(--blood)] hover:underline font-bold"
                 >
-                  {copied ? "âœ“ Copied" : "Copy text"}
+                  {copied ? "Copied" : "Copy text"}
                 </button>
               </div>
             </div>
@@ -954,8 +960,8 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
                 onClick={() => setActive(issue.id)}
                 className={`p-3 rounded-lg border text-sm flex items-center justify-between cursor-pointer transition-colors ${
                   active === issue.id
-                    ? "border-[#ff6b00] bg-[#ff6b00]/10"
-                    : "border-white/5 bg-black/30 hover:border-[#ff6b00]/30"
+                    ? "border-[var(--blood)] bg-[var(--blood)]/10"
+                    : "border-white/5 bg-black/30 hover:border-[var(--blood)]/30"
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -963,9 +969,9 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
                     {issue.flagged_text}
                   </span>
 
-                  <span className="text-xs text-[#71717a]">â€¢</span>
+                  <span className="text-xs text-[#71717a]">·</span>
 
-                  <span className="text-xs text-[#ff9500]">
+                  <span className="text-xs text-[var(--redhi)] font-mono">
                     {issue.category.toLowerCase().replace(/_/g, " ")}
                   </span>
                 </div>
@@ -1009,3 +1015,4 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
     </div>
   );
 }
+

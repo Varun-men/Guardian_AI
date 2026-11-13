@@ -24,10 +24,10 @@ export function Hero() {
           then continuously flags every post when facts drift.
         </p>
         <div className="acts">
-          <Link className="pill red" href="/demo">
+          <Link className="pill red" href="/analyze">
             Explore interactive demo
           </Link>
-          <Link className="pill ghost" href="/demo">
+          <Link className="pill ghost" href="/analyze">
             See sample demo
           </Link>
         </div>

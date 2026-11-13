@@ -145,7 +145,7 @@ class Issue(BaseModel):
         "SUPPORTED",
         "CONTRADICTED",
         "UNVERIFIED",
-    ]
+    ] = "CONTRADICTED"
 
     # --------------------------------------------------------
     # UI / REVIEW SEVERITY

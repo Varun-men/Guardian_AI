@@ -116,8 +116,8 @@ export function WhatTabs() {
             <div>
               <p className="c">{item.count}</p>
               <h3>{item.heading}</h3>
-              <Link className="pill light" href="/demo">
-                Try it in the demo
+              <Link className="pill light" href="/analyze">
+                Try it now — instant test
               </Link>
             </div>
             <div>

@@ -14,6 +14,7 @@ def check_accessibility(images):
             issues.append({
                 "id": f"iss_{uuid.uuid4().hex[:8]}",
                 "claim_id": None,
+                "status": "CONTRADICTED",
                 "severity": "ACCESSIBILITY",
                 "category": "MISSING_ALT_TEXT",
                 "check_type": "RULE",

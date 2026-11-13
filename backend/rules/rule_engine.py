@@ -18,6 +18,7 @@ def create_issue(
     return {
         "id": f"iss_{uuid.uuid4().hex[:8]}",
         "claim_id": None,
+        "status": "CONTRADICTED",
         "severity": severity,
         "category": category,
         "check_type": "RULE",

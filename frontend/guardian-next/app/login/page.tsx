@@ -73,7 +73,7 @@ export default function LoginPage() {
           height: "min(400px, 60vw)",
           borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(236,122,28,0.08) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(176,18,27,0.12) 0%, transparent 70%)",
           pointerEvents: "none",
           filter: "blur(60px)",
         }}
@@ -168,16 +168,11 @@ export default function LoginPage() {
           >
             Sign in to your workspace
           </h1>
-          <p
-            style={{
-              fontFamily: "var(--mono)",
-              fontSize: "13px",
-              color: "var(--t3)",
-              letterSpacing: "0.04em",
-              margin: 0,
-            }}
-          >
-            TEAM ACCESS · GUARDIAN AI PLATFORM
+          <p style={{ fontFamily: "var(--mono)", fontSize: "13px", color: "var(--t3)", letterSpacing: "0.04em", margin: 0 }}>
+            SIGN IN · OR{" "}
+            <Link href="/register" style={{ color: "var(--redhi)", textDecoration: "underline", textUnderlineOffset: "3px" }}>
+              CREATE AN ACCOUNT
+            </Link>
           </p>
         </div>
 
@@ -324,6 +319,32 @@ export default function LoginPage() {
               "Sign in"
             )}
           </button>
+
+          {/* Quick Demo Access Button */}
+          <button
+            type="button"
+            onClick={() => {
+              localStorage.setItem("guardian_token", "demo_guest_session");
+              router.replace("/analyze");
+            }}
+            style={{
+              width: "100%",
+              height: "42px",
+              borderRadius: "10px",
+              background: "rgba(255, 226, 220, 0.05)",
+              border: "1px solid var(--line)",
+              color: "var(--t2)",
+              fontFamily: "var(--mono)",
+              fontSize: "12.5px",
+              letterSpacing: "0.04em",
+              cursor: "pointer",
+              transition: "border-color 0.15s, color 0.15s",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--t3)"; e.currentTarget.style.color = "var(--t1)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--line)"; e.currentTarget.style.color = "var(--t2)"; }}
+          >
+            Instant Test / Guest Access →
+          </button>
         </form>
 
         {/* Footer */}
@@ -340,7 +361,7 @@ export default function LoginPage() {
           }}
         >
           <Link
-            href="/demo"
+            href="/analyze"
             style={{
               fontFamily: "var(--mono)",
               fontSize: "12px",
@@ -352,7 +373,22 @@ export default function LoginPage() {
             onMouseEnter={(e) => { e.currentTarget.style.color = "var(--t1)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = "var(--t3)"; }}
           >
-            Try public demo →
+            Instant analyzer test →
+          </Link>
+          <Link
+            href="/register"
+            style={{
+              fontFamily: "var(--mono)",
+              fontSize: "12px",
+              color: "var(--t3)",
+              letterSpacing: "0.04em",
+              textDecoration: "none",
+              transition: "color 0.15s ease",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--t1)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--t3)"; }}
+          >
+            Create account →
           </Link>
           <Link
             href="/"

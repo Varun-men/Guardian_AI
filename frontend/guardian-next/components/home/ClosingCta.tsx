@@ -19,8 +19,8 @@ export function ClosingCta() {
           Guardian flags and suggests. A reviewer approves every modification, and each decision is
           recorded into an append-only audit log.
         </p>
-        <Link className="pill light" href="/demo">
-          Explore the demo
+        <Link className="pill light" href="/analyze">
+          Try it now — instant test
         </Link>
       </Reveal>
     </section>
