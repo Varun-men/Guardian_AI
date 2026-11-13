@@ -149,62 +149,6 @@ def get_evidence_items(evidence: List[Any]) -> List[Dict[str, Any]]:
                 }
             )
 
-
-            # ------------------------------------------------
-            # PARSED RESPONSE
-            # ------------------------------------------------
-
-            result = response.parsed
-            logger.info(
-                "Verifier response for claim %s: status=%s, passage_ids=%s",
-                claim_id,
-                getattr(result, "status", None),
-                getattr(result, "evidence_passage_ids", None)
-                )
-
-
-            if result is None:
-
-                raise RuntimeError(
-                    "Gemini returned an empty verification result."
-                )
-
-
-            # Always preserve the original claim ID
-            result.claim_id = claim_id
-
-
-            # ------------------------------------------------
-            # SAFETY CHECK
-            # ------------------------------------------------
-
-            supplied_ids = {
-                item["passage_id"]
-                for item in evidence
-            }
-
-            result.evidence_passage_ids = [
-                passage_id
-                for passage_id in result.evidence_passage_ids
-                if passage_id in supplied_ids
-            ]
-
-
-            return result
-
-
-        # ====================================================
-        # TEMPORARY GEMINI API ERRORS
-        # ====================================================
-
-        except errors.APIError as exc:
-
-            retryable_codes = (
-                429,
-                500,
-                502,
-                503,
-                504
         else:
             items.append(
                 {
