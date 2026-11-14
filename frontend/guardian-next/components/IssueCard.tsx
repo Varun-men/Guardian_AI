@@ -71,6 +71,14 @@ export default function IssueCard({
   onSelect,
   onApply,
   onDismiss,
+  facts,
+  selectedFactId,
+  linkedFactId,
+  associating,
+  associationError,
+  onFactChange,
+  onAssociateFact,
+  showFactAssociation,
 }: {
   issue: Issue;
   active: boolean;
@@ -79,6 +87,19 @@ export default function IssueCard({
   onSelect: () => void;
   onApply: () => void;
   onDismiss: () => void;
+  facts: {
+    id: string;
+    name: string;
+    value: string;
+    source_name: string | null;
+  }[];
+  selectedFactId: string;
+  linkedFactId: string | null;
+  associating: boolean;
+  associationError: string | null;
+  onFactChange: (factId: string) => void;
+  onAssociateFact: () => void;
+  showFactAssociation: boolean;
 }) {
   const toneColor = getSeverityColor(issue.severity);
 
@@ -276,7 +297,7 @@ export default function IssueCard({
             </span>
 
             {/* Ledger Linked Badge */}
-            {issue.fact_id && (
+            {(linkedFactId || issue.fact_id) && (
               <span
                 style={{
                   display: "inline-flex",
@@ -418,6 +439,97 @@ export default function IssueCard({
               Source: {issue.passage_id} · v{issue.source_version}
             </p>
           </div>
+                    {/* Fact Association */}
+          {showFactAssociation && (
+            <div
+              onClick={(event) => event.stopPropagation()}
+              style={{
+                padding: 12,
+                borderRadius: 10,
+                border: "1px solid var(--line)",
+                background: "var(--s1)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 9,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 11,
+                  color: "var(--t3)",
+                  fontFamily: "var(--mono)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                }}
+              >
+                Link verified evidence to a ledger fact
+              </span>
+
+              {linkedFactId ? (
+                <span style={{ color: "#10b981", fontSize: 12 }}>
+                  Fact successfully linked: {linkedFactId}
+                </span>
+              ) : (
+                <>
+                  <select
+                    value={selectedFactId}
+                    onChange={(event) => onFactChange(event.target.value)}
+                    disabled={associating || facts.length === 0}
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      borderRadius: 8,
+                      background: "var(--s2)",
+                      color: "var(--t1)",
+                      border: "1px solid var(--line)",
+                      fontSize: 13,
+                    }}
+                  >
+                    <option value="">
+                      {facts.length
+                        ? "Select a matching ledger fact"
+                        : "No matching active facts available"}
+                    </option>
+
+                    {facts.map((fact) => (
+                      <option key={fact.id} value={fact.id}>
+                        {fact.name} — {fact.value}
+                        {fact.source_name ? ` (${fact.source_name})` : ""}
+                      </option>
+                    ))}
+                  </select>
+
+                  <button
+                    type="button"
+                    disabled={!selectedFactId || associating}
+                    onClick={onAssociateFact}
+                    style={{
+                      padding: "9px 12px",
+                      borderRadius: 8,
+                      border: "none",
+                      background: "var(--blood)",
+                      color: "white",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor:
+                        !selectedFactId || associating
+                          ? "not-allowed"
+                          : "pointer",
+                      opacity: !selectedFactId || associating ? 0.5 : 1,
+                    }}
+                  >
+                    {associating ? "Linking..." : "Link Fact"}
+                  </button>
+                </>
+              )}
+
+              {associationError && (
+                <span style={{ color: "var(--redhi)", fontSize: 12 }}>
+                  {associationError}
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Suggested Revision Box */}
           {issue.suggested_fix && (

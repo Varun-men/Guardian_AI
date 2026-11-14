@@ -91,6 +91,7 @@ def retrieve_evidence(claim_text, top_k=3, db=None):
         return [
             {
                 "passage_id": passage.id,
+                "source_id": source.id,
                 "evidence_text": passage.content,
                 "source": source.filename,
                 "source_version": f"v{passage.source_version}",

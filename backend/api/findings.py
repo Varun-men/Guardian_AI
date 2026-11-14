@@ -6,10 +6,14 @@ from sqlalchemy.orm import Session
 from backend.auth.dependencies import get_db, require_role
 from backend.db.models import (
     Finding,
+    Claim,
+    ClaimLedger,
+    Review,
     User,
     Fact,
     Source,
     SourcePassage,
+    Draft,
 )
 from backend.services.audit import record_audit
 
@@ -75,6 +79,18 @@ def assign_finding_reviewer(
 
         db.commit()
         db.refresh(finding)
+
+        # Temporary diagnostic: verify the committed JSON using a fresh query
+        db.expire(finding, ["evidence"])
+
+        saved_finding = db.query(Finding).filter(
+            Finding.id == finding_id
+        ).populate_existing().first()
+
+        print(
+            "ASSOCIATION POST-COMMIT CHECK:",
+            saved_finding.evidence
+        )
 
         return {
             "message": "Reviewer assigned successfully",
@@ -263,14 +279,69 @@ def associate_finding_with_fact(
                 detail="Cited quotation does not match the selected passage"
             )
 
-        # 10. Save the association in the evidence JSON
+                # 10. Build the updated evidence JSON
+        updated_evidence = [
+            dict(item) for item in evidence_items
+        ]
+
         old_fact_id = matching_item.get("fact_id")
 
-        matching_item["fact_id"] = fact.id
-        matching_item["source_id"] = source.id
+        for item in updated_evidence:
+            if item.get("passage_id") == payload.passage_id:
+                item["fact_id"] = fact.id
+                item["source_id"] = source.id
+                break
 
-        # Reassign the JSON value so SQLAlchemy detects the change
-        finding.evidence = [dict(item) for item in evidence_items]
+        # 11. Record the association
+        record_audit(
+            db=db,
+            actor_user_id=current_user.id,
+            action="finding.fact_associated",
+            entity_type="finding",
+            entity_id=finding.id,
+            old_value={
+                "fact_id": old_fact_id,
+                "passage_id": payload.passage_id
+            },
+            new_value={
+                "fact_id": fact.id,
+                "passage_id": passage.id,
+                "source_id": source.id,
+                "source_version": passage.source_version
+            }
+        )
+
+        # 12. Explicitly update the database JSON column
+        updated_rows = db.query(Finding).filter(
+            Finding.id == finding_id
+        ).update(
+            {Finding.evidence: updated_evidence},
+            synchronize_session=False
+        )
+
+        if updated_rows != 1:
+            db.rollback()
+            raise HTTPException(
+                status_code=500,
+                detail="Could not save fact association"
+            )
+
+        db.commit()
+
+        saved_finding = db.query(Finding).filter(
+            Finding.id == finding_id
+        ).populate_existing().first()
+
+        if not any(
+            isinstance(item, dict)
+            and item.get("passage_id") == payload.passage_id
+            and item.get("fact_id") == fact.id
+            for item in (saved_finding.evidence or [])
+        ):
+            raise HTTPException(
+                status_code=500,
+                detail="Fact association was not persisted"
+            )
 
         # 11. Record the change in the audit log
         record_audit(
@@ -294,13 +365,259 @@ def associate_finding_with_fact(
         db.commit()
         db.refresh(finding)
 
+        db.expire(finding, ["evidence"])
+        saved_finding = db.query(Finding).filter(
+            Finding.id == finding_id
+        ).populate_existing().first()
+
+        print(
+            "FACT ASSOCIATION SAVED:",
+            saved_finding.evidence
+        )
+
         return {
             "message": "Fact successfully associated with finding",
+            "debug_saved_evidence": saved_finding.evidence,
             "finding_id": finding.id,
             "fact_id": fact.id,
             "passage_id": passage.id,
             "source_id": source.id,
             "source_version": passage.source_version
+        }
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
+        raise
+
+
+# --------------------------------------------------
+# READ-ONLY: Retrieve findings and evidence for a draft
+# --------------------------------------------------
+
+@router.get("/draft/{draft_id}")
+def get_draft_findings(
+    draft_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin", "reviewer", "creator")),
+):
+    draft = db.query(Draft).filter(
+        Draft.id == draft_id
+    ).first()
+
+    if not draft:
+        raise HTTPException(status_code=404, detail="Draft not found")
+
+    results = []
+
+    for review in draft.reviews:
+        for finding in review.findings:
+            evidence_results = []
+
+            for item in (finding.evidence or []):
+                passage = db.query(SourcePassage).filter(
+                    SourcePassage.id == item.get("passage_id")
+                ).first()
+
+                evidence_results.append({
+                    "passage_id": item.get("passage_id"),
+                    "source_id": item.get("source_id"),
+                    "source_version": item.get("source_version"),
+                    "cited_evidence": item.get("cited_evidence"),
+                    "fact_id": item.get("fact_id"),
+                    "passage_content": passage.content if passage else None,
+                    "database_passage_version": (
+                        passage.source_version if passage else None
+                    ),
+                    "database_passage_source_id": (
+                        passage.source_id if passage else None
+                    ),
+                })
+
+            results.append({
+                "finding_id": finding.id,
+                "claim_id": finding.claim_id,
+                "claim_text": (
+                    finding.claim.claim_text
+                    if finding.claim else None
+                ),
+                "review_id": finding.review_id,
+                "finding_type": finding.finding_type,
+                "verification_status": finding.verification_status,
+                "explanation": finding.explanation,
+                "evidence": evidence_results,
+            })
+
+    return {
+        "draft_id": draft.id,
+        "draft_status": draft.status,
+        "draft_content": draft.content,
+        "reviews": [
+            {
+                "review_id": review.id,
+                "review_status": review.status,
+            }
+            for review in draft.reviews
+        ],
+        "total_findings": len(results),
+        "findings": results,
+    }
+
+from sqlalchemy.orm import Session
+
+
+@router.post("/draft/{draft_id}/sync-ledger")
+def sync_approved_draft_to_ledger(
+    draft_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    try:
+        draft = db.query(Draft).filter(
+            Draft.id == draft_id
+        ).first()
+
+        if not draft:
+            raise HTTPException(
+                status_code=404,
+                detail="Draft not found."
+            )
+
+        if draft.status != "approved":
+            raise HTTPException(
+                status_code=409,
+                detail="Only approved drafts can be synced."
+            )
+
+        reviews = db.query(Review).filter(
+            Review.draft_id == draft_id,
+            Review.status == "approved"
+        ).all()
+
+        if not reviews:
+            raise HTTPException(
+                status_code=409,
+                detail="No approved review exists for this draft."
+            )
+
+        inserted = 0
+        duplicates = 0
+        skipped = []
+
+        for review in reviews:
+            findings = db.query(Finding).filter(
+                Finding.review_id == review.id
+            ).all()
+
+            for finding in findings:
+                if not finding.claim_id:
+                    continue
+
+                claim = db.query(Claim).filter(
+                    Claim.id == finding.claim_id,
+                    Claim.review_id == review.id
+                ).first()
+
+                if not claim:
+                    skipped.append({
+                        "finding_id": finding.id,
+                        "reason": "Claim missing or belongs to another review."
+                    })
+                    continue
+
+                for item in finding.evidence or []:
+                    fact_id = item.get("fact_id")
+
+                    if not fact_id:
+                        continue
+
+                    fact = db.query(Fact).filter(
+                        Fact.id == fact_id
+                    ).first()
+
+                    if not fact:
+                        skipped.append({
+                            "finding_id": finding.id,
+                            "reason": "Associated fact not found."
+                        })
+                        continue
+
+                    source = db.query(Source).filter(
+                        Source.id == fact.source_id
+                    ).first()
+
+                    passage_id = item.get("passage_id")
+                    passage = db.query(SourcePassage).filter(
+                        SourcePassage.id == passage_id
+                    ).first() if passage_id else None
+
+                    cited_evidence = (
+                        item.get("cited_evidence") or ""
+                    ).strip()
+
+                    valid = (
+                        source is not None
+                        and source.status == "active"
+                        and source.version == fact.source_version
+                        and passage is not None
+                        and passage.source_id == fact.source_id
+                        and passage.source_version == fact.source_version
+                        and bool(cited_evidence)
+                        and cited_evidence in passage.content
+                        and (
+                            not item.get("source_id")
+                            or item.get("source_id") == fact.source_id
+                        )
+                    )
+
+                    if not valid:
+                        skipped.append({
+                            "finding_id": finding.id,
+                            "fact_id": fact_id,
+                            "reason": "Source, passage, version, or citation validation failed."
+                        })
+                        continue
+
+                    existing = db.query(ClaimLedger).filter(
+                        ClaimLedger.claim_id == claim.id,
+                        ClaimLedger.fact_id == fact.id
+                    ).first()
+
+                    if existing:
+                        duplicates += 1
+                        continue
+
+                    db.add(ClaimLedger(
+                        claim_id=claim.id,
+                        fact_id=fact.id,
+                        status="approved"
+                    ))
+                    inserted += 1
+
+        record_audit(
+            db=db,
+            actor_user_id=current_user.id,
+            action="ledger.backfilled",
+            entity_type="draft",
+            entity_id=draft.id,
+            new_value={
+                "inserted": inserted,
+                "duplicates": duplicates,
+                "skipped": len(skipped)
+            }
+        )
+
+        db.commit()
+
+        return {
+            "draft_id": draft.id,
+            "status": "completed",
+            "inserted": inserted,
+            "duplicates": duplicates,
+            "skipped_count": len(skipped),
+            "skipped": skipped
         }
 
     except HTTPException:

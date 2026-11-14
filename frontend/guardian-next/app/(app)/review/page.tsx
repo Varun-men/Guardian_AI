@@ -9,6 +9,16 @@ import { mockAnalyze } from "@/lib/mock";
 import type { AnalyzeResponse } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
 
+type FactOption = {
+  id: string;
+  name: string;
+  value: string;
+  source_id: string;
+  source_name: string | null;
+  source_version: number;
+  source_status: string | null;
+};
+
 export default function ReviewPage() {
   const { analysis, setAnalysis } = useLedger();
 
@@ -91,10 +101,92 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
   const [saving, setSaving] = useState(false);
   const [decisionsLoaded, setDecisionsLoaded] = useState(isDemo);
 
+  const [facts, setFacts] = useState<FactOption[]>([]);
+  const [selectedFactIds, setSelectedFactIds] = useState<Record<string, string>>({});
+  const [associatedFacts, setAssociatedFacts] = useState<Record<string, string>>({});
+  const [associatingId, setAssociatingId] = useState<string | null>(null);
+  const [associationErrors, setAssociationErrors] = useState<Record<string, string>>({});
+
+    // Load registered Facts for evidence-to-ledger association.
+  useEffect(() => {
+    if (isDemo) return;
+
+    let cancelled = false;
+
+    apiFetch("/api/facts/")
+      .then((data) => {
+        if (!cancelled) {
+          setFacts(data.facts ?? []);
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setActionError(
+            error instanceof Error ? error.message : "Could not load Facts."
+          );
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isDemo]);
+
   const pending = issues.filter(
     (issue) =>
       issue.needs_human_decision && !resolved[issue.id]
   ).length;
+
+    const getEligibleFacts = (issue: (typeof issues)[number]) => {
+    if (!issue.source_id || !issue.passage_id ||
+        issue.passage_id === "NO_VERIFIED_CITATION") {
+      return [];
+    }
+
+    const issueVersion = issue.source_version.replace(/^v/i, "");
+
+    return facts.filter(
+      (fact) =>
+        fact.source_id === issue.source_id &&
+        String(fact.source_version) === issueVersion &&
+        fact.source_status === "active"
+    );
+  };
+
+  const associateFact = async (issue: (typeof issues)[number]) => {
+    const factId = selectedFactIds[issue.id];
+
+    if (!factId) return;
+
+    setAssociatingId(issue.id);
+    setAssociationErrors((prev) => ({ ...prev, [issue.id]: "" }));
+
+    try {
+      await apiFetch(
+        `/api/findings/${encodeURIComponent(issue.id)}/associate-fact`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            fact_id: factId,
+            passage_id: issue.passage_id,
+          }),
+        }
+      );
+
+      setAssociatedFacts((prev) => ({
+        ...prev,
+        [issue.id]: factId,
+      }));
+    } catch (error) {
+      setAssociationErrors((prev) => ({
+        ...prev,
+        [issue.id]:
+          error instanceof Error ? error.message : "Fact association failed.",
+      }));
+    } finally {
+      setAssociatingId(null);
+    }
+  };
 
   // Restore previously saved decisions from the backend (skipped for demo drafts).
   useEffect(() => {
@@ -995,20 +1087,34 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
 
           {issues.map((issue) => (
             <IssueCard
-              key={issue.id}
-              issue={issue}
-              active={active === issue.id}
-              resolved={resolved[issue.id]}
-              onSelect={() => setActive(issue.id)}
-              canApply={
-                issue.severity !== "ACCESSIBILITY" &&
-                issue.category !== "MISSING_ALT_TEXT" &&
-                Boolean(issue.flagged_text) &&
-                content.includes(issue.flagged_text)
-              }
-              onApply={() => void apply(issue.id)}
-              onDismiss={() => void dismiss(issue.id)}
-            />
+  key={issue.id}
+  issue={issue}
+  active={active === issue.id}
+  resolved={resolved[issue.id]}
+  onSelect={() => setActive(issue.id)}
+  canApply={
+    issue.severity !== "ACCESSIBILITY" &&
+    issue.category !== "MISSING_ALT_TEXT" &&
+    Boolean(issue.flagged_text) &&
+    content.includes(issue.flagged_text)
+  }
+  onApply={() => void apply(issue.id)}
+  onDismiss={() => void dismiss(issue.id)}
+  facts={getEligibleFacts(issue)}
+  selectedFactId={selectedFactIds[issue.id] ?? ""}
+  linkedFactId={associatedFacts[issue.id] ?? issue.fact_id ?? null}
+  associating={associatingId === issue.id}
+  associationError={associationErrors[issue.id] || null}
+  onFactChange={(factId) =>
+    setSelectedFactIds((prev) => ({ ...prev, [issue.id]: factId }))
+  }
+  onAssociateFact={() => void associateFact(issue)}
+  showFactAssociation={
+    !isDemo &&
+    Boolean(issue.source_id) &&
+    issue.passage_id !== "NO_VERIFIED_CITATION"
+  }
+/>
           ))}
         </section>
       </div>

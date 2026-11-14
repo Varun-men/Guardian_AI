@@ -213,7 +213,18 @@ def decide_finding(
         Draft.id == review.draft_id
     ).first()
 
-    if not draft or draft.status != "in_review":
+    if not draft:
+        raise HTTPException(404, "Draft not found")
+
+    if draft.status == "approved":
+        return {
+            "finding_id": finding.id,
+            "decision": decision,
+            "saved": True,
+            "message": "Draft is already approved.",
+        }
+
+    if draft.status != "in_review":
         raise HTTPException(409, "Draft is not awaiting review")
 
     try:
@@ -305,6 +316,13 @@ def approve_draft(
     if not draft:
         raise HTTPException(404, "Draft not found")
 
+    if draft.status == "approved":
+        return {
+            "draft_id": draft.id,
+            "status": "approved",
+            "message": "Draft is already approved.",
+        }
+
     if draft.status != "in_review":
         raise HTTPException(409, "Draft is not awaiting approval")
 
@@ -329,9 +347,18 @@ def approve_draft(
         ).order_by(AuditLog.id.desc()).first()
 
         if not audit:
-            raise HTTPException(
-                409,
-                f"Finding {finding.id} still needs a decision",
+            if finding.severity == "HIGH":
+                raise HTTPException(
+                    409,
+                    f"High-risk finding '{finding.finding_type}' requires a decision before approval",
+                )
+            record_audit(
+                db,
+                actor_user_id=user.id,
+                action="finding.dismissed",
+                entity_type="finding",
+                entity_id=finding.id,
+                new_value={"decision": "dismissed", "note": "Auto-cleared upon approval"},
             )
 
     try:

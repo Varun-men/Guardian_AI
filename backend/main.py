@@ -11,6 +11,7 @@ from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 
 from backend.api.facts import router as facts_router
+from backend.api.ledger import router as ledger_router
 from backend.auth.routes import router as auth_router
 from backend.api.sources import router as sources_router
 from backend.api.reviews import router as reviews_router
@@ -58,6 +59,7 @@ app = FastAPI(
 
 app.include_router(auth_router)
 app.include_router(facts_router)
+app.include_router(ledger_router)
 app.include_router(sources_router)
 app.include_router(monitoring_router)
 app.include_router(reviews_router)
@@ -168,6 +170,8 @@ class Issue(BaseModel):
     flagged_text: str
 
     passage_id: str
+
+    source_id: Optional[str] = None
 
     source_version: str
 
@@ -668,7 +672,16 @@ def analyze_draft(
                     cited_evidence = (
                         "No approved evidence was selected."
                     )
+            # Get the source associated with the selected passage.
+            source_id = None
 
+            if passage_id != "NO_VERIFIED_CITATION":
+                evidence_item = evidence_by_id.get(
+                    str(passage_id),
+                    {},
+                )
+
+                source_id = evidence_item.get("source_id")
 
             # ====================================================
             # STEP 6
@@ -761,6 +774,8 @@ def analyze_draft(
                     flagged_text=claim.claim_text,
 
                     passage_id=passage_id,
+
+                    source_id=source_id,
 
                     source_version=source_version,
 
@@ -983,6 +998,8 @@ def analyze_draft(
                 evidence_data = [
                     {
                         "passage_id": issue.passage_id,
+
+                        "source_id": issue.source_id,
 
                         "source_version": (
                             issue.source_version

@@ -227,7 +227,10 @@ def update_fact(
                 Claim.id == entry.claim_id
             ).first()
 
-            if not claim or claim.status != "approved":
+            # The approved ClaimLedger entry is the publication
+            # record. Claim.status may still be "supported",
+            # "contradicted", or "unverified" from Analyze.
+            if not claim:
                 continue
 
             claim.status = "stale"

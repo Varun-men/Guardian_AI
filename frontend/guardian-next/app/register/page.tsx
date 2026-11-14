@@ -28,15 +28,23 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
+      const effectiveEmail = email.trim() || `${username.trim()}@guardian-ai.local`;
       const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          username: username.trim(),
+          email: effectiveEmail,
+          password,
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        if (response.status === 409 || data.detail?.includes("already exists")) {
+          throw new Error("This username or email is already registered. Please sign in or choose another.");
+        }
         throw new Error(data.detail ?? "Registration failed");
       }
 

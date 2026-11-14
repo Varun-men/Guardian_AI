@@ -414,6 +414,13 @@ def approve_source(
                 detail="Source not found.",
             )
 
+        if source.status == "active":
+            return {
+                "message": f"Source '{source.filename}' is already active.",
+                "source_id": source.id,
+                "status": "active",
+            }
+
         if source.status != "pending":
             raise HTTPException(
                 status_code=409,
