@@ -8,9 +8,9 @@ from dotenv import load_dotenv
 from google import genai
 
 try:
-    from .schemas import Claim, ClaimResponse, ClaimExtractionResult
+    from .schemas import Claim, ClaimResponse
 except ImportError:
-    from schemas import Claim, ClaimResponse, ClaimExtractionResult
+    from schemas import Claim, ClaimResponse
 
 logger = logging.getLogger("guardian-ai.claim-extractor")
 
@@ -32,13 +32,10 @@ def get_gemini_client():
     return genai.Client(api_key=api_key)
 
 
-def _fallback_extract_claims(text: str) -> ClaimExtractionResult:
+def _fallback_extract_claims(text: str) -> ClaimResponse:
     """
     Deterministic fallback claim extraction if Gemini API is unavailable (e.g. 503).
     Splits text into meaningful sentence-level claims so analysis can always proceed.
-
-    The result is explicitly tagged with extraction_method="fallback" so callers
-    never mistake a degraded, sentence-split extraction for a successful AI run.
     """
     sentences = re.split(r"(?<=[.!?\n])\s+", text.strip())
     claims = []
@@ -55,13 +52,10 @@ def _fallback_extract_claims(text: str) -> ClaimExtractionResult:
         claims.append(Claim(claim_id="clm_1", claim_text=text.strip()))
 
     logger.info("Used fallback claim extraction: extracted %d claims", len(claims))
-    return ClaimExtractionResult(
-        claims=claims,
-        extraction_method="fallback",
-    )
+    return ClaimResponse(claims=claims)
 
 
-def extract_claims(text: str) -> ClaimExtractionResult:
+def extract_claims(text: str) -> ClaimResponse:
 
     prompt = f"""
     You are an expert factual claim extractor.
@@ -98,10 +92,7 @@ def extract_claims(text: str) -> ClaimExtractionResult:
                 },
             )
             if response.parsed and getattr(response.parsed, "claims", None) is not None:
-                return ClaimExtractionResult(
-                    claims=response.parsed.claims,
-                    extraction_method="gemini",
-                )
+                return response.parsed
         except Exception as exc:
             last_error = exc
             logger.warning("Gemini model %s call failed (%s). Trying next candidate.", model_name, exc)
