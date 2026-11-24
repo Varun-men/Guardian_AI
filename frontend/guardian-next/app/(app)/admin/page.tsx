@@ -1,7 +1,8 @@
-﻿"use client";
+"use client";
 import Link from "next/link";
 import { useState } from "react";
 import { useLedger } from "@/lib/ledger-store";
+import { BrandShield } from "@/components/BrandShield";
 
 export default function AdminPage() {
   const { facts, posts, audit, updateFact } = useLedger();
@@ -18,10 +19,7 @@ export default function AdminPage() {
     <div className="flex flex-col gap-6 max-w-5xl">
       <header style={{ marginBottom: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-          <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-            <path d="M16 2L4 7v9c0 6.6 5.1 12.8 12 14.3C22.9 28.8 28 22.6 28 16V7L16 2z" fill="#B0121B"/>
-            <path d="M11 16l3.5 3.5L21 12" stroke="#F7ECE8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <BrandShield size={22} />
           <span style={{ fontFamily: "var(--mono)", fontSize: 12, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--t3)", fontWeight: 600 }}>Ground truth</span>
         </div>
         <h1 style={{ fontSize: "clamp(30px, 4vw, 42px)", fontWeight: 700, letterSpacing: "-0.03em", color: "var(--t1)", margin: "0 0 10px", lineHeight: 1.1 }}>

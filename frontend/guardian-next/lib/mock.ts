@@ -4,6 +4,7 @@ export const mockAnalyze: AnalyzeResponse = {
   draft_id: "uuid-1234",
   content: "Meet Orbit. Our app is 3x faster than any competitor. Plans start at $29.",
   status: "in_review",
+  extraction_method: "gemini",
   issues: [
     { id: "iss_1", claim_id: "clm_1", severity: "HIGH", category: "COMPARATIVE_CLAIM", check_type: "AI",
       flagged_text: "Our app is 3x faster than any competitor.", passage_id: "POLICY_V2_SEC_4", source_version: "v2",

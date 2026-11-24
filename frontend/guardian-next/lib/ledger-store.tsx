@@ -69,6 +69,8 @@ type Store = {
 
 const STORAGE_KEY = "guardian-ai-ledger-v1";
 
+// Demo baseline values mirror the backend source of truth in
+// seed_data/pricing_v2.json so demo and production prices never diverge.
 const INITIAL_FACTS: Fact[] = [
   {
     id: "fact_starter_price",
@@ -79,7 +81,7 @@ const INITIAL_FACTS: Fact[] = [
   {
     id: "fact_pro_price",
     label: "Pro plan",
-    value: 79,
+    value: 49,
     version: 2,
   },
 ];
@@ -89,8 +91,8 @@ const INITIAL_POSTS: Post[] = [
     id: "post_pro",
     title: "Orbit Pro announcement",
     fact_id: "fact_pro_price",
-    text: "Upgrade to Orbit Pro for $79 per month.",
-    token: "$79",
+    text: "Upgrade to Orbit Pro for $49 per month.",
+    token: "$49",
     status: "approved",
   },
 ];

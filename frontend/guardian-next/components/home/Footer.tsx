@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandShield } from "@/components/BrandShield";
 
 export function Footer() {
   return (
@@ -6,10 +7,7 @@ export function Footer() {
       <div className="wrap">
         <div>
           <div className="logo" style={{ marginBottom: "8px", color: "var(--t1)", display: "flex", alignItems: "center", gap: "8px" }}>
-            <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-              <path d="M16 2L4 7v9c0 6.6 5.1 12.8 12 14.3C22.9 28.8 28 22.6 28 16V7L16 2z" fill="#B0121B" />
-              <path d="M11 16l3.5 3.5L21 12" stroke="#F7ECE8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <BrandShield size={20} />
             <span style={{ fontWeight: 700 }}>Guardian<span style={{ color: "var(--blood)", fontWeight: 400 }}> AI</span></span>
           </div>
           Built by The Bloodline for the Inkloom AI Challenge

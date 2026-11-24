@@ -2,6 +2,7 @@
 import logging
 import os
 import uuid
+from contextlib import asynccontextmanager
 from typing import List, Literal, Optional
 
 from fastapi import FastAPI, HTTPException, Depends
@@ -29,6 +30,15 @@ from backend.db.models import (
 
 from backend.rules.integration import run_rule_checks
 
+from backend.services.scheduler import (
+    start_monitoring_scheduler,
+    shutdown_monitoring_scheduler,
+)
+
+from backend.services.rate_limit import (
+    enforce_rate_limit,
+)
+
 
 # ============================================================
 # LOGGING CONFIGURATION
@@ -43,6 +53,14 @@ logger = logging.getLogger("guardian-ai")
 # FASTAPI APPLICATION
 # ============================================================
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Start continuous monitoring when configured via env.
+    start_monitoring_scheduler()
+    yield
+    shutdown_monitoring_scheduler()
+
+
 app = FastAPI(
     title="Guardian AI API",
     description=(
@@ -50,6 +68,7 @@ app = FastAPI(
         "the Living Claim Ledger"
     ),
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 
@@ -95,7 +114,7 @@ frontend_origins = (
 app.add_middleware(
     CORSMiddleware,
     allow_origins=frontend_origins,
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -125,7 +144,8 @@ class AnalyzeRequest(BaseModel):
     has_image: bool = False
 
     images: List[ImageMetadata] = Field(
-        default_factory=list
+        default_factory=list,
+        max_length=5
     )
 
 
@@ -202,6 +222,13 @@ class AnalyzeResponse(BaseModel):
 
     issues: List[Issue]
 
+    # "gemini" when AI extraction succeeded, "fallback" when the
+    # deterministic sentence splitter was used instead.
+    extraction_method: Literal[
+        "gemini",
+        "fallback",
+    ] = "gemini"
+
 
 # ============================================================
 # ROOT ENDPOINT
@@ -236,6 +263,7 @@ def health_check():
 @app.post(
     "/api/review/analyze",
     response_model=AnalyzeResponse,
+    dependencies=[Depends(enforce_rate_limit)],
 )
 def analyze_draft(
     request: AnalyzeRequest,
@@ -285,6 +313,19 @@ def analyze_draft(
             )
 
         claims = extraction.claims
+
+        extraction_method = getattr(
+            extraction,
+            "extraction_method",
+            "gemini",
+        )
+
+        if extraction_method == "fallback":
+
+            logger.warning(
+                "Claim extraction used the deterministic fallback "
+                "splitter; extracted claims may be incomplete."
+            )
 
 
         # ====================================================
@@ -1094,6 +1135,7 @@ def analyze_draft(
             content=request.content,
             status="in_review",
             issues=issues,
+            extraction_method=extraction_method,
         )
 
 

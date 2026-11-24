@@ -1,9 +1,10 @@
-﻿
+
 "use client";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import IssueCard from "@/components/IssueCard";
+import { BrandShield } from "@/components/BrandShield";
 import { useLedger } from "@/lib/ledger-store";
 import { mockAnalyze } from "@/lib/mock";
 import type { AnalyzeResponse } from "@/lib/types";
@@ -661,14 +662,44 @@ function Review({ analysis }: { analysis: AnalyzeResponse }) {
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl">
+      {isDemo && (
+        <div
+          role="status"
+          className="rounded-lg border border-[#f5b82e]/40 bg-[rgba(245,184,46,0.12)] p-3.5 text-sm text-[var(--t1)] flex flex-col gap-1"
+        >
+          <span className="font-semibold text-[var(--yellow)] uppercase tracking-wide text-xs">
+            Demo sample mode
+          </span>
+          <span>
+            This is a built-in sample draft for illustration only. Nothing is
+            saved to the database and approval is disabled. Analyze your own
+            draft from the Analyze page to use the live, database-backed
+            workflow.
+          </span>
+        </div>
+      )}
+
+      {analysis.extraction_method === "fallback" && (
+        <div
+          role="alert"
+          className="rounded-lg border border-[var(--redhi)]/40 bg-[rgba(176,18,27,0.14)] p-3.5 text-sm text-[var(--t1)] flex flex-col gap-1"
+        >
+          <span className="font-semibold text-[var(--redhi)] uppercase tracking-wide text-xs">
+            Degraded extraction
+          </span>
+          <span>
+            AI claim extraction was unavailable, so a deterministic sentence
+            splitter was used instead. Some factual claims may be missing —
+            review the full draft carefully before approving.
+          </span>
+        </div>
+      )}
+
       {/* Top Header & Primary Status */}
       <header className="flex flex-wrap items-end justify-between gap-4" style={{ marginBottom: 16 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-            <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-              <path d="M16 2L4 7v9c0 6.6 5.1 12.8 12 14.3C22.9 28.8 28 22.6 28 16V7L16 2z" fill="#B0121B"/>
-              <path d="M11 16l3.5 3.5L21 12" stroke="#F7ECE8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <BrandShield size={22} />
             <span style={{ fontFamily: "var(--mono)", fontSize: 12, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--t3)", fontWeight: 600 }}>Citation gate</span>
           </div>
           <h1 style={{ fontSize: "clamp(32px, 4.5vw, 46px)", fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.035em", margin: "0 0 10px", color: "var(--t1)" }}>

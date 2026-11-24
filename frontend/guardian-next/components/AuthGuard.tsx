@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+import { BrandShield } from "@/components/BrandShield";
+import { apiFetch, ApiError, clearSession, isDemoSession } from "@/lib/api";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -23,25 +23,22 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       }
 
       // Allow instant access for demo tokens
-      if (token.startsWith("demo")) {
+      if (isDemoSession(token)) {
         if (!cancelled) setStatus("ready");
         return;
       }
 
       try {
-        const response = await fetch(`${API_BASE}/api/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (response.status === 401 || response.status === 403) {
-          localStorage.removeItem("guardian_token");
+        // apiFetch silently refreshes an expired access token
+        // (via the HttpOnly refresh cookie) and retries once.
+        await apiFetch("/api/auth/me");
+        if (!cancelled) setStatus("ready");
+      } catch (err) {
+        if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+          clearSession();
           router.replace("/login");
           return;
         }
-
-        if (!response.ok) throw new Error("Could not validate your session.");
-        if (!cancelled) setStatus("ready");
-      } catch {
         if (!cancelled) setStatus("error");
       }
     }
@@ -53,10 +50,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   if (status === "checking") {
     return (
       <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "var(--ink)", gap: 16 }}>
-        <svg width="36" height="36" viewBox="0 0 32 32" fill="none">
-          <path d="M16 2L4 7v9c0 6.6 5.1 12.8 12 14.3C22.9 28.8 28 22.6 28 16V7L16 2z" fill="#B0121B" opacity="0.9"/>
-          <path d="M11 16l3.5 3.5L21 12" stroke="#F7ECE8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
+        <BrandShield size={36} />
         <p style={{ fontFamily: "var(--mono)", fontSize: 13, color: "var(--t3)", letterSpacing: "0.08em" }}>VERIFYING SESSION...</p>
       </div>
     );

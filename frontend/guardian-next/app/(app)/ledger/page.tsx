@@ -1,7 +1,9 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/lib/api";
+import { BrandShield } from "@/components/BrandShield";
+import type { ClaimStatus } from "@/lib/types";
 
 type LedgerFact = {
   id: number;
@@ -21,7 +23,7 @@ type LedgerEntry = {
   text: string;
   draft_content: string;
   claim_status: string;
-  status: "current" | "stale" | "unverified";
+  status: ClaimStatus;
   ledger_status: string | null;
   fact: LedgerFact | null;
   created_at: string | null;
@@ -40,7 +42,7 @@ type LedgerResponse = {
   }>;
 };
 
-type Filter = "all" | "stale" | "current" | "unverified";
+type Filter = "all" | ClaimStatus;
 
 export default function LedgerPage() {
   const [data, setData] = useState<LedgerResponse | null>(null);
@@ -89,6 +91,9 @@ export default function LedgerPage() {
 
   const staleCount = posts.filter((post) => post.status === "stale").length;
   const currentCount = posts.filter((post) => post.status === "current").length;
+  const contradictedCount = posts.filter(
+    (post) => post.status === "contradicted"
+  ).length;
   const unverifiedCount = posts.filter(
     (post) => post.status === "unverified"
   ).length;
@@ -104,6 +109,7 @@ export default function LedgerPage() {
     { id: "all", label: "All claims", count: posts.length },
     { id: "stale", label: "Stale drift", count: staleCount },
     { id: "current", label: "Current & linked", count: currentCount },
+    { id: "contradicted", label: "Contradicted", count: contradictedCount },
     { id: "unverified", label: "Unverified", count: unverifiedCount },
   ];
 
@@ -135,25 +141,7 @@ export default function LedgerPage() {
               marginBottom: 12,
             }}
           >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 32 32"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M16 2L4 7v9c0 6.6 5.1 12.8 12 14.3C22.9 28.8 28 22.6 28 16V7L16 2z"
-                fill="#B0121B"
-              />
-              <path
-                d="M11 16l3.5 3.5L21 12"
-                stroke="#F7ECE8"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <BrandShield size={22} />
             <span
               style={{
                 fontFamily: "var(--mono)",
@@ -406,6 +394,7 @@ export default function LedgerPage() {
             ) : (
               filteredPosts.map((post) => {
                 const stale = post.status === "stale";
+                const contradicted = post.status === "contradicted";
                 const unverified = post.status === "unverified";
                 const fact = post.fact;
 
@@ -416,7 +405,7 @@ export default function LedgerPage() {
                     style={{
                       background: "var(--s1)",
                       border: `1px solid ${
-                        stale ? "var(--redhi)" : "var(--line)"
+                        stale || contradicted ? "var(--redhi)" : "var(--line)"
                       }`,
                       borderRadius: 24,
                       padding: 28,
@@ -456,18 +445,22 @@ export default function LedgerPage() {
                         <div className="chip">
                           <span
                             className={`d ${
-                              stale ? "y" : unverified ? "o" : ""
+                              stale ? "y" : unverified || contradicted ? "o" : ""
                             }`}
                             style={{
                               background:
-                                !stale && !unverified ? "#10b981" : undefined,
+                                !stale && !unverified && !contradicted
+                                  ? "#10b981"
+                                  : undefined,
                             }}
                           />
                           {stale
                             ? "Stale"
-                            : unverified
-                              ? "Unverified"
-                              : "Current"}
+                            : contradicted
+                              ? "Contradicted"
+                              : unverified
+                                ? "Unverified"
+                                : "Current"}
                         </div>
                       </div>
 
@@ -525,6 +518,23 @@ export default function LedgerPage() {
                         changed. The approved claim has not been silently
                         rewritten. Review the claim and approve a corrected
                         version through the normal workflow.
+                      </div>
+                    )}
+
+                    {contradicted && (
+                      <div
+                        style={{
+                          background: "var(--s2)",
+                          border: "1px solid var(--redhi)",
+                          borderRadius: 12,
+                          padding: "12px 16px",
+                          fontSize: 13,
+                          color: "var(--t2)",
+                        }}
+                      >
+                        This approved claim contradicts its linked Registry
+                        fact. Review the claim and approve a corrected version
+                        through the normal workflow.
                       </div>
                     )}
 

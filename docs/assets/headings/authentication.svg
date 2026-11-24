@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 56" width="880" height="56" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <rect width="880" height="56" rx="12" fill="#0d0d0d"/>
+  <rect width="10" height="56" rx="5" fill="#dc143c"/>
+  <text x="32" y="38" fill="#ffffff" font-size="30" font-weight="800">Authentication</text>
+  <rect x="32" y="48" width="60" height="4" rx="2" fill="#dc143c"/>
+</svg>

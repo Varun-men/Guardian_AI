@@ -439,6 +439,70 @@ class User(Base):
         server_default=func.now()
     )
 
+    refresh_tokens: Mapped[list["RefreshToken"]] = relationship(
+        back_populates="user"
+    )
+
+
+# ---------------------------------------
+# 8b. REFRESH TOKEN MODEL
+# Stores hashed, revocable, rotating
+# refresh tokens for persistent login.
+# ---------------------------------------
+
+class RefreshToken(Base):
+    __tablename__ = "refresh_tokens"
+
+    id: Mapped[str] = mapped_column(
+        String(100),
+        primary_key=True
+    )
+
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=False
+    )
+
+    # SHA-256 hash of the opaque refresh token.
+    # The raw token is never stored.
+    token_hash: Mapped[str] = mapped_column(
+        String(64),
+        unique=True,
+        nullable=False
+    )
+
+    # SHA-256 hash of the CSRF token bound to this
+    # refresh token (double-submit protection).
+    csrf_hash: Mapped[str] = mapped_column(
+        String(64),
+        nullable=False
+    )
+
+    expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False
+    )
+
+    revoked_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+
+    # Rotation: id of the refresh token that replaced this one.
+    replaced_by: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
+
+    user: Mapped["User"] = relationship(
+        back_populates="refresh_tokens"
+    )
+
 
 # ---------------------------------------
 # ---------------------------------------

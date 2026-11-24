@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { analyzeDraft } from "@/lib/analyze";
 import { useLedger } from "@/lib/ledger-store";
+import { BrandShield } from "@/components/BrandShield";
 
 type Scenario = {
   id: string;
@@ -53,7 +54,7 @@ const SCENARIOS: Scenario[] = [
     badgeBg: "rgba(245, 184, 46, 0.18)",
     badgeColor: "var(--yellow)",
     badgeBorder: "rgba(245, 184, 46, 0.4)",
-    description: "Claims an outdated price ($69/mo) when the verified Fact Registry lists Orbit Pro at $79/mo.",
+    description: "Claims an outdated price ($69/mo) when the verified Fact Registry lists Orbit Pro at $49/mo.",
     content: "Get full access with Orbit Pro for just $69 per month. All advanced security rules included.",
     hasImage: false,
     imageFilename: "",
@@ -166,10 +167,7 @@ export default function AnalyzePage() {
       <header className="flex flex-wrap items-end justify-between gap-4" style={{ marginBottom: 4 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-            <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-              <path d="M16 2L4 7v9c0 6.6 5.1 12.8 12 14.3C22.9 28.8 28 22.6 28 16V7L16 2z" fill="#B0121B" />
-              <path d="M11 16l3.5 3.5L21 12" stroke="#F7ECE8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <BrandShield size={22} />
             <span style={{ fontFamily: "var(--mono)", fontSize: 12, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--t3)", fontWeight: 600 }}>
               Pre-publish verification
             </span>

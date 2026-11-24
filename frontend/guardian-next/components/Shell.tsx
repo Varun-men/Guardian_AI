@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useLedgerStore } from "@/lib/ledger-store";
+import { apiFetch, logout, isDemoSession } from "@/lib/api";
+import { BrandShield } from "@/components/BrandShield";
 
 /* ─── Minimal SVG Icons ─── */
 const Ico = {
@@ -86,8 +88,35 @@ export default function Shell({
 
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [userName, setUserName] = useState("");
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const searchWrapRef = useRef<HTMLDivElement | null>(null);
+
+  // Resolve the signed-in user's display name (guest demo vs authenticated).
+  useEffect(() => {
+    let active = true;
+
+    (async () => {
+      try {
+        const token = localStorage.getItem("guardian_token") ?? "";
+        const demo = token.startsWith("demo");
+
+        if (!token || demo) {
+          if (active) setUserName(demo ? "Demo User" : "Account");
+          return;
+        }
+
+        const me = await apiFetch("/api/auth/me");
+        if (active) setUserName(me?.username || "Account");
+      } catch {
+        if (active) setUserName("Account");
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Keyboard shortcut Ctrl+K / Cmd+K to focus search
   useEffect(() => {
@@ -154,11 +183,11 @@ export default function Shell({
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          gap: 8px;
+          gap: 7px;
           height: 42px;
-          padding: 0 20px;
+          padding: 0 12px;
           border-radius: 999px;
-          font-size: 15.5px;
+          font-size: 14.5px;
           font-weight: 600;
           color: var(--t2);
           text-decoration: none;
@@ -272,10 +301,11 @@ export default function Shell({
         .shell-nav-scroll {
           display: flex;
           align-items: center;
-          gap: 8px;
+          flex-wrap: nowrap;
+          gap: 12px;
           overflow-x: auto;
           scrollbar-width: none;
-          flex-shrink: 0;
+          flex-shrink: 1;
           min-width: 0;
         }
 
@@ -315,6 +345,12 @@ export default function Shell({
             width: 180px;
           }
 
+          .top-nav-tab {
+            gap: 6px;
+            padding: 0 9px;
+            font-size: 13.5px;
+          }
+
           .shell-main {
             padding: 24px 16px 64px;
           }
@@ -348,6 +384,7 @@ export default function Shell({
             justify-content: space-between;
             flex-wrap: wrap;
             padding-top: 4px;
+            margin-left: 0 !important;
           }
 
           .top-search-wrap {
@@ -363,6 +400,26 @@ export default function Shell({
 
           .shell-profile {
             display: none !important;
+          }
+        }
+
+        @media (max-width: 960px) {
+          .shell-header {
+            flex-wrap: wrap !important;
+            height: auto !important;
+            min-height: 64px;
+            padding: 10px 16px !important;
+            row-gap: 10px !important;
+          }
+
+          .shell-header-left {
+            width: 100%;
+          }
+
+          .shell-header-right {
+            width: 100%;
+            flex-wrap: wrap;
+            margin-left: 0 !important;
           }
         }
       `}</style>
@@ -390,13 +447,15 @@ export default function Shell({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
+            flexWrap: "wrap",
             padding: "0 28px",
-            height: 64,
+            height: "auto",
+            minHeight: 64,
             background: "rgba(15, 7, 8, 0.88)",
             borderBottom: "1px solid var(--line)",
             backdropFilter: "blur(14px)",
             WebkitBackdropFilter: "blur(14px)",
-            gap: 20,
+            gap: 12,
           }}
         >
           {/* Left: Brand and Navigation */}
@@ -407,6 +466,8 @@ export default function Shell({
               alignItems: "center",
               gap: 24,
               minWidth: 0,
+              flexBasis: 0,
+              flexGrow: 1,
               flexShrink: 1,
             }}
           >
@@ -425,11 +486,7 @@ export default function Shell({
                 flexShrink: 0,
               }}
             >
-              <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                <path d="M16 2L4 7v9c0 6.6 5.1 12.8 12 14.3C22.9 28.8 28 22.6 28 16V7L16 2z" fill="#B0121B"/>
-                <path d="M16 2L4 7v9c0 6.6 5.1 12.8 12 14.3C22.9 28.8 28 22.6 28 16V7L16 2z" stroke="#F2675F" strokeWidth="0.5" fill="none" opacity="0.4"/>
-                <path d="M11 16l3.5 3.5L21 12" stroke="#F7ECE8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              <BrandShield size={28} />
               <span style={{ fontWeight: 700, letterSpacing: "-0.02em" }}>Guardian<span style={{ color: "var(--blood)", fontWeight: 400 }}> AI</span></span>
             </Link>
 
@@ -735,16 +792,30 @@ export default function Shell({
                     color: "#fff",
                   }}
                 >
-                  U
+                  {(userName.trim()[0] || "U").toUpperCase()}
                 </span>
-                <span>Team</span>
+                <span
+                  style={{
+                    maxWidth: 140,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {userName || "Account"}
+                </span>
               </div>
 
               <button
                 type="button"
                 title="Sign out"
-                onClick={() => {
-                  localStorage.removeItem("guardian_token");
+                onClick={async () => {
+                  const token = localStorage.getItem("guardian_token") ?? "";
+                  if (!isDemoSession(token)) {
+                    await logout();
+                  } else {
+                    localStorage.removeItem("guardian_token");
+                  }
                   window.location.href = "/login";
                 }}
                 style={{

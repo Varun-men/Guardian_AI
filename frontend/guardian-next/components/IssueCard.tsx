@@ -1,4 +1,4 @@
-﻿import type { Issue } from "@/lib/types";
+import type { Issue } from "@/lib/types";
 
 const LABEL: Record<Issue["severity"], string> = {
   HIGH: "High Risk",

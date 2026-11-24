@@ -24,8 +24,7 @@ load_dotenv(PROJECT_ROOT / ".env")
 BASE_DIR = Path(__file__).resolve().parent
 DATABASE_PATH = BASE_DIR / "guardian.db"
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
+DATABASE_URL = os.getenv("DATABASE_URL") or (
     f"sqlite:///{DATABASE_PATH.as_posix()}"
 )
 

@@ -1,6 +1,6 @@
 
 from pydantic import BaseModel
-from typing import List
+from typing import List, Literal
 
 
 class Claim(BaseModel):
@@ -10,3 +10,10 @@ class Claim(BaseModel):
 
 class ClaimResponse(BaseModel):
     claims: List[Claim]
+
+
+class ClaimExtractionResult(BaseModel):
+    """Claim extraction output tagged with how it was produced."""
+
+    claims: List[Claim]
+    extraction_method: Literal["gemini", "fallback"] = "gemini"

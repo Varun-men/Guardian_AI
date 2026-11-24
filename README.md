@@ -160,32 +160,71 @@ No login needed. Open the [public demo](https://guardian-ai-smoky-theta.vercel.a
 <h2><a id="run-it-locally"></a><img src="docs/assets/headings/run-it-locally.svg" alt="Run it locally" width="880"></h2>
 
 <!-- Check these folder names and commands against the repo before publishing. -->
-You need Node 20+, Python 3.11+, and a PostgreSQL database with the pgvector extension.
+You need Node 20+ and Python 3.11+. PostgreSQL with pgvector is used in
+production; locally the backend falls back to SQLite automatically when
+`DATABASE_URL` is empty, so no database setup is required for development.
 
 ```bash
 git clone https://github.com/Varun-men/Guardian_AI.git
 cd Guardian_AI
 
-# backend
-cd backend
+# backend — install from the repo root, then run as a package
 pip install -r requirements.txt
-uvicorn main:app --reload          # http://localhost:8000
+uvicorn backend.main:app --reload       # http://localhost:8000
 
 # frontend (new terminal)
-cd frontend
+cd frontend/guardian-next
 npm install
-npm run dev                        # http://localhost:3000
+npm run dev                             # http://localhost:3000
 ```
 
 <h3><a id="setup"></a><img src="docs/assets/headings/setup.svg" alt="Setup" width="880"></h3>
 
-Create a `.env` in the backend folder. Git ignores it, so never commit it.
+Create a `.env` in the **project root** (next to `requirements.txt`). Git
+ignores it, so never commit it. See `.env.example` for the full list.
 
 ```bash
-DATABASE_URL=postgresql://…
+# Required: stable signing secret for access tokens.
+# Generate one: python -c "import secrets; print(secrets.token_hex(32))"
+# Keep it fixed across deploys or every session is invalidated on restart.
+JWT_SECRET_KEY=…
+
+# Required for AI claim extraction and evidence embeddings.
 GEMINI_API_KEY=…
-JWT_SECRET=any-long-random-string
+
+# Optional: production PostgreSQL (with pgvector). Leave empty for SQLite.
+DATABASE_URL=
+
+# Session lifetimes (defaults shown).
+ACCESS_TOKEN_EXPIRE_MINUTES=15
+REFRESH_TOKEN_EXPIRE_DAYS=30
+
+# Refresh-cookie settings. Defaults (SameSite=None + Secure) work for
+# cross-site deployments like Vercel -> Render.
+REFRESH_COOKIE_SAMESITE=none
+REFRESH_COOKIE_SECURE=
+
+# Comma-separated frontend origins allowed by CORS.
+FRONTEND_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+
+# Optional: run the monitoring scan every N minutes (0 disables).
+MONITORING_INTERVAL_MINUTES=0
 ```
+
+<h3><a id="authentication"></a><img src="docs/assets/headings/authentication.svg" alt="Authentication" width="880"></h3>
+
+Sign-in issues a short-lived JWT access token (15 minutes, sent as a
+`Bearer` header) plus a rotating refresh token delivered only through an
+HttpOnly cookie — JavaScript can never read it. When an access token
+expires, the frontend silently calls `POST /api/auth/refresh`, which
+validates the cookie, revokes the old token, and issues a new pair, so
+users stay signed in for up to `REFRESH_TOKEN_EXPIRE_DAYS` (30 days
+default). The refresh endpoint is protected by double-submit CSRF
+validation, `POST /api/auth/logout` revokes the token server-side, and
+replayed or expired refresh tokens are always rejected. Guest/Demo Mode
+(`demo_*` tokens) is unaffected and bypasses real authentication by
+design. After schema changes, run `python -m backend.db.init_db` (SQLite)
+or `alembic upgrade head` (PostgreSQL) to create new tables.
 
 <h2><a id="repository-layout"></a><img src="docs/assets/headings/repository-layout.svg" alt="Repository layout" width="880"></h2>
 
@@ -197,9 +236,9 @@ docs/         the Round 3 report and the images used in this README
 
 <h2><a id="scope-and-limitations"></a><img src="docs/assets/headings/scope-and-limitations.svg" alt="Scope and limitations" width="880"></h2>
 
-**Does today:** extracts claims and verifies them against uploaded, approved sources. Keeps humans in the approval path, enforced by the backend. Tracks approved claims in a persistent ledger with three statuses.
+**Does today:** extracts claims and verifies them against uploaded, approved sources. Keeps humans in the approval path, enforced by the backend. Tracks approved claims in a persistent ledger with three statuses. Keeps users signed in with rotating refresh tokens and supports interval-based background monitoring via `MONITORING_INTERVAL_MINUTES`.
 
-**Does not do yet:** scheduled background monitoring and notifications, automatic reopening of affected reviews, advanced reviewer assignments and configurable approval chains, live monitoring of external web sources.
+**Does not do yet:** automatic reopening of affected reviews, advanced reviewer assignments and configurable approval chains, live monitoring of external web sources.
 
 The public demo runs on sample data. No test counts, response times, uptime figures or accuracy percentages are claimed.
 

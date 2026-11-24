@@ -6,4 +6,7 @@ export interface Issue {
   cited_evidence: string; explanation: string; suggested_fix: string | null;
   confidence: number; needs_human_decision: boolean; fact_id: string | null;
 }
-export interface AnalyzeResponse { draft_id: string; content: string; status: string; issues: Issue[]; }
+export interface AnalyzeResponse { draft_id: string; content: string; status: string; issues: Issue[]; extraction_method?: "gemini" | "fallback"; }
+
+// Mirrors the status values returned by GET /api/ledger/.
+export type ClaimStatus = "current" | "stale" | "contradicted" | "unverified";

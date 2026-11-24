@@ -463,6 +463,27 @@ def verify_battery_claim(
 # PRICE
 # ============================================================
 
+def detect_currency(text: str) -> str:
+    """
+    Detect the currency symbol used in a piece of text.
+
+    Defaults to the project's primary currency (USD, "$") when no
+    explicit symbol is present, so bare amounts such as "29" are
+    still rendered consistently with the approved pricing sheet.
+    """
+
+    lowered = normalize_text(text).lower()
+
+    if (
+        "₹" in lowered
+        or "inr" in lowered
+        or re.search(r"\brs\.?\b", lowered)
+    ):
+        return "₹"
+
+    return "$"
+
+
 def extract_price(text: str) -> Optional[int]:
 
     text = normalize_text(text)
@@ -471,7 +492,9 @@ def extract_price(text: str) -> Optional[int]:
         r"₹\s*([\d,]+)",
         r"\bINR\s*([\d,]+)",
         r"\bRs\.?\s*([\d,]+)",
-        r"\bpriced?\s+at\s+₹?\s*([\d,]+)",
+        r"\$\s*([\d,]+)",
+        r"\bUSD\s*([\d,]+)",
+        r"\bpriced?\s+at\s+[₹$]?\s*([\d,]+)",
     ]
 
     for pattern in patterns:
@@ -501,6 +524,8 @@ def verify_price_claim(
     if claimed_price is None:
         return None
 
+    currency = detect_currency(claim)
+
     evidence_items = valid_evidence_items(evidence)
 
     for item in evidence_items:
@@ -519,7 +544,7 @@ def verify_price_claim(
                 status="SUPPORTED",
                 confidence=0.98,
                 explanation=(
-                    f"The claimed price of ₹{claimed_price:,} "
+                    f"The claimed price of {currency}{claimed_price:,} "
                     "matches the approved evidence."
                 ),
                 evidence_passage_ids=[
@@ -541,9 +566,9 @@ def verify_price_claim(
             status="CONTRADICTED",
             confidence=0.98,
             explanation=(
-                f"The claim states a price of ₹{claimed_price:,}, "
+                f"The claim states a price of {currency}{claimed_price:,}, "
                 f"but the approved evidence states "
-                f"₹{evidence_price:,}."
+                f"{currency}{evidence_price:,}."
             ),
             evidence_passage_ids=[
                 item["passage_id"]

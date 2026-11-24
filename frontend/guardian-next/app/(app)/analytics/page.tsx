@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useLedger } from "@/lib/ledger-store";
 import { evalMetrics } from "@/lib/eval";
 import type { Severity } from "@/lib/types";
+import { BrandShield } from "@/components/BrandShield";
 
 const SEV: { key: Severity; label: string; color: string }[] = [
   { key: "HIGH",          label: "High risk",     color: "var(--redhi)"  },
@@ -26,10 +27,7 @@ export default function AnalyticsPage() {
       {/* ─── Header ─── */}
       <header>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-          <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-            <path d="M16 2L4 7v9c0 6.6 5.1 12.8 12 14.3C22.9 28.8 28 22.6 28 16V7L16 2z" fill="#B0121B"/>
-            <path d="M11 16l3.5 3.5L21 12" stroke="#F7ECE8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <BrandShield size={22} />
           <span style={{ fontFamily: "var(--mono)", fontSize: 12, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--t3)", fontWeight: 600 }}>
             Session metrics
           </span>

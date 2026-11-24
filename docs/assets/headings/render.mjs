@@ -7,7 +7,7 @@ const dir = dirname(fileURLToPath(import.meta.url));
 const headings = [
   "Guardian AI", "What this is", "The problem", "How it works", "The Living Claim Ledger",
   "Features", "Responsible by design", "Product in pictures", "Orbit X1 scenario",
-  "Tech stack", "Try it now", "Run it locally", "Setup", "Repository layout",
+  "Tech stack", "Try it now", "Run it locally", "Setup", "Authentication", "Repository layout",
   "Scope and limitations", "Roadmap", "Team", "License",
 ];
 const slug = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
