@@ -52,7 +52,6 @@ async function refreshAccessToken(): Promise<string | null> {
       try {
         const response = await fetch(`${API_BASE}/api/auth/refresh`, {
           method: "POST",
-          credentials: "include",
           headers: { "X-CSRF-Token": getCsrfToken() },
         });
 
@@ -82,7 +81,6 @@ export async function logout(): Promise<void> {
   try {
     await fetch(`${API_BASE}/api/auth/logout`, {
       method: "POST",
-      credentials: "include",
     });
   } catch {
     // Server unreachable — still clear local state below.
@@ -98,7 +96,6 @@ async function request(
 ): Promise<Response> {
   return fetch(`${API_BASE}${path}`, {
     ...options,
-    credentials: "include",
     headers: {
       ...(typeof FormData !== "undefined" && options.body instanceof FormData
         ? {}

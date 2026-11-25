@@ -32,7 +32,6 @@ export default function RegisterPage() {
       const effectiveEmail = email.trim() || `${username.trim()}@guardian-ai.local`;
       const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: "POST",
-        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: username.trim(),
